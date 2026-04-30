@@ -206,7 +206,7 @@ export const DEFAULT_ROLE_PERMISSIONS = {
   admin: boolMap([
     'user.create', 'user.edit', 'user.delete', 'user.setPlatformRole', 'user.resetPassword',
     'team.create', 'team.delete', 'team.assignLead', 'team.viewAllPlatform',
-    'system.audit', 'system.archive.view', 'system.archive.restore',
+    'system.settings', 'system.audit', 'system.archive.view', 'system.archive.restore',
     'dictionary.view', 'dictionary.manage',
     'team.member.add', 'team.member.remove', 'team.member.changeRole', 'team.member.viewAll',
     'team.project.create', 'team.project.delete', 'team.project.viewList', 'team.project.manageAccess', 'team.settings.rename',

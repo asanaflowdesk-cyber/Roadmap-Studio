@@ -1,7 +1,7 @@
 import { SEED_DATA } from '../data/seed.js';
 import { DEFAULT_ROLE_PERMISSIONS, permissionKeys } from '../data/permissions.js';
 
-export const STORAGE_KEY = 'roadmap_studio_app_v1';
+export const STORAGE_KEY = 'roadmap_studio_app_v2';
 export const SESSION_KEY = 'roadmap_studio_session_user_id';
 
 function clone(value) {
@@ -37,13 +37,16 @@ export function migrateData(raw) {
     ...user
   }));
 
-  db.teams = db.teams || [];
+  db.teams = (db.teams || []).map(team => ({
+    ...team,
+    members: (team.members || []).filter(member => db.users.find(user => user.id === member.userId)?.platformRole === 'user')
+  }));
   db.projects = (db.projects || []).map(project => ({
     ...project,
     access: (project.access || []).map(entry => ({
       userId: entry.userId,
       role: normalizeProjectRole(entry.role || entry.level)
-    })).filter(entry => entry.role !== 'none')
+    })).filter(entry => entry.role !== 'none' && db.users.find(user => user.id === entry.userId)?.platformRole === 'user')
   }));
   db.phases = db.phases || [];
   db.items = (db.items || []).map(item => ({
@@ -51,7 +54,9 @@ export function migrateData(raw) {
     comments: [],
     smart: ['', '', '', '', ''],
     people: [],
-    ...item
+    ...item,
+    ownerId: db.users.find(user => user.id === item.ownerId)?.platformRole === 'user' ? item.ownerId : null,
+    people: (item.people || []).filter(userId => db.users.find(user => user.id === userId)?.platformRole === 'user')
   }));
   const arrayDefaults = [
     'dictionaries', 'dictionaryItems', 'projectTemplates', 'templatePhases', 'templateItems', 'templateVersions',

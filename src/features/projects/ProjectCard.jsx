@@ -8,7 +8,8 @@ export function ProjectCard({ project }) {
   const items = db.items.filter(item => !item.isArchived && item.projectId === project.id);
   const done = items.filter(item => item.status === 'done').length;
   const progress = items.length ? Math.round(done / items.length * 100) : 0;
-  const accessUsers = (project.access || []).slice(0, 4).map(entry => db.users.find(user => user.id === entry.userId)).filter(Boolean);
+  const accessUsers = (project.access || []).slice(0, 4).map(entry => db.users.find(user => user.id === entry.userId))
+    .filter(user => user && user.platformRole === 'user');
 
   return (
     <article className="card project-card" onClick={() => setRoute(prev => ({ ...prev, view: 'project', projectId: project.id, tab: 'table', itemId: items[0]?.id || null, phaseId: db.phases.find(phase => phase.projectId === project.id)?.id || null }))}>

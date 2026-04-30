@@ -21,11 +21,12 @@ export function CreatePhaseModal({ open, onClose, projectId }) {
 }
 
 export function CreateTaskModal({ open, onClose, projectId }) {
-  const { db, createItem } = useApp();
+  const { db, currentUser, createItem } = useApp();
   const phases = db.phases.filter(phase => phase.projectId === projectId).sort((a,b) => a.sort - b.sort);
   const project = db.projects.find(item => item.id === projectId);
   const teamUsers = project ? [...new Set([...(project.access || []).map(entry => entry.userId), ...(db.teams.find(team => team.id === project.teamId)?.members || []).map(member => member.userId)])]
-    .map(userId => db.users.find(user => user.id === userId)).filter(Boolean) : [];
+    .map(userId => db.users.find(user => user.id === userId))
+    .filter(user => user && user.status !== 'blocked' && user.platformRole === 'user') : [];
   const [form, setForm] = useState({
     phaseId: phases[0]?.id || '', type: 'task', title: '', result: '', desc: '', status: 'new', ownerId: '', start: today(), due: today(), people: []
   });
@@ -50,7 +51,7 @@ export function CreateTaskModal({ open, onClose, projectId }) {
         <label className="field"><span className="label">Старт</span><input className="input" type="date" value={form.start} onChange={e => set('start', e.target.value)} /></label>
         <label className="field"><span className="label">Дедлайн</span><input className="input" type="date" value={form.due} onChange={e => set('due', e.target.value)} /></label>
       </div>
-      <label className="field"><span className="label">Ответственный</span><select className="select" value={form.ownerId} onChange={e => set('ownerId', e.target.value)}><option value="">Я</option>{teamUsers.map(user => <option key={user.id} value={user.id}>{user.name}</option>)}</select></label>
+      <label className="field"><span className="label">Ответственный</span><select className="select" value={form.ownerId} onChange={e => set('ownerId', e.target.value)}><option value="">{currentUser.platformRole === 'user' ? 'Я' : 'Не назначать'}</option>{teamUsers.map(user => <option key={user.id} value={user.id}>{user.name}</option>)}</select></label>
     </Modal>
   );
 }

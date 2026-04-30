@@ -1,10 +1,26 @@
-import React from 'react';
+import React, { useMemo, useState } from 'react';
 import { useApp } from '../../app/AppContext.jsx';
 import { Badge } from '../../shared/ui/Badge.jsx';
 import { fmt, daysBetween } from '../../shared/utils/date.js';
 import { Avatar } from '../../shared/ui/Avatar.jsx';
 
 const statuses = [['new', 'Не начато'], ['progress', 'В работе'], ['approval', 'Согласование'], ['risk', 'Риски'], ['done', 'Готово']];
+const DAY = 86400000;
+
+function toTime(value) {
+  const time = new Date(`${value}T00:00:00`).getTime();
+  return Number.isFinite(time) ? time : null;
+}
+
+function addDays(date, days) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+function monthLabel(date) {
+  return date.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+}
 
 export function KanbanView({ items, phases }) {
   const { setRoute } = useApp();
@@ -19,16 +35,80 @@ export function KanbanView({ items, phases }) {
   );
 }
 
-export function GanttView({ items }) {
-  const min = Math.min(...items.map(item => new Date(`${item.start}T00:00:00`).getTime()).filter(Boolean));
-  const max = Math.max(...items.map(item => new Date(`${item.due}T00:00:00`).getTime()).filter(Boolean));
-  const range = Math.max(1, Math.round((max - min) / 86400000) + 1);
-  return <div className="gantt">{items.map(item => {
-    const startOffset = Math.max(0, Math.round((new Date(`${item.start}T00:00:00`).getTime() - min) / 86400000));
-    const width = Math.max(4, daysBetween(item.start, item.due) / range * 100);
-    const left = Math.min(96, startOffset / range * 100);
-    return <div className="gantt-row" key={item.id}><div><div className="strong small truncate">{item.title}</div><div className="small muted">{fmt(item.start)} → {fmt(item.due)}</div></div><div className="gantt-line"><div className="gantt-bar" style={{ left: `${left}%`, width: `${width}%` }} /></div></div>;
-  })}</div>;
+export function GanttView({ project, items, phases }) {
+  const [collapsed, setCollapsed] = useState({});
+  const validTimes = items.flatMap(item => [toTime(item.start), toTime(item.due)]).filter(Number.isFinite);
+  const min = validTimes.length ? Math.min(...validTimes) : toTime(new Date().toISOString().slice(0, 10));
+  const max = validTimes.length ? Math.max(...validTimes) : min + 14 * DAY;
+  const range = Math.max(1, Math.round((max - min) / DAY) + 1);
+  const days = useMemo(() => Array.from({ length: range }, (_, index) => addDays(min, index)), [min, range]);
+  const months = [];
+  days.forEach((date, index) => {
+    const label = monthLabel(date);
+    const last = months[months.length - 1];
+    if (last?.label === label) last.span += 1;
+    else months.push({ label, start: index + 1, span: 1 });
+  });
+
+  function position(item) {
+    const start = toTime(item.start) ?? min;
+    const due = toTime(item.due) ?? start;
+    const left = Math.max(1, Math.round((start - min) / DAY) + 1);
+    const span = Math.max(1, Math.round((due - start) / DAY) + 1);
+    return { gridColumn: `${left} / span ${span}` };
+  }
+
+  function toggle(phaseId) {
+    setCollapsed(prev => ({ ...prev, [phaseId]: !prev[phaseId] }));
+  }
+
+  return (
+    <div className="gantt-page">
+      <div className="gantt-card">
+        <div className="gantt-titlebar">
+          <div>
+            <h1>{project?.title || 'Гант'}</h1>
+            <p>{project?.desc || 'План-график задач по фазам проекта'}</p>
+          </div>
+          <span className="badge badge-task">{items.length} задач</span>
+        </div>
+        <div className="gantt-grid" style={{ '--day-count': range }}>
+          <div className="gantt-left gantt-corner">Задачи</div>
+          <div className="gantt-months">
+            {months.map(month => <div key={`${month.label}-${month.start}`} style={{ gridColumn: `${month.start} / span ${month.span}` }}>{month.label}</div>)}
+          </div>
+          <div className="gantt-left gantt-days-label" />
+          <div className="gantt-days">{days.map(day => <div key={day.toISOString()}>{day.getDate()}</div>)}</div>
+
+          {phases.map((phase, phaseIndex) => {
+            const phaseItems = items.filter(item => item.phaseId === phase.id);
+            const isCollapsed = collapsed[phase.id];
+            const done = phaseItems.filter(item => item.status === 'done').length;
+            return (
+              <React.Fragment key={phase.id}>
+                <button className="gantt-left gantt-phase" onClick={() => toggle(phase.id)}>
+                  <span>{isCollapsed ? '›' : '⌄'}</span>
+                  <strong>Фаза {phaseIndex + 1} · {phase.title}</strong>
+                  <em>{phaseItems.length} задач · {phaseItems.length ? Math.round(done / phaseItems.length * 100) : 0}%</em>
+                </button>
+                <div className="gantt-phase-line" />
+                {!isCollapsed && phaseItems.map(item => (
+                  <React.Fragment key={item.id}>
+                    <div className="gantt-left gantt-task-title"><span className={`dot ${item.type === 'risk' ? 'dot-risk' : item.type === 'milestone' ? 'dot-milestone' : item.status === 'done' ? 'dot-done' : ''}`} /><span>{item.title}</span></div>
+                    <div className="gantt-track">
+                      <div className={`gantt-task-bar gantt-task-${item.type} ${item.status === 'done' ? 'done' : ''}`} style={position(item)} title={`${item.title}: ${fmt(item.start)} → ${fmt(item.due)}`}>
+                        <span>{daysBetween(item.start, item.due)} дн.</span>
+                      </div>
+                    </div>
+                  </React.Fragment>
+                ))}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 export function RoadmapView({ phases, items }) {
@@ -49,6 +129,6 @@ export function AnalyticsView({ project, items, db }) {
   const total = items.length || 1;
   const done = items.filter(item => item.status === 'done').length;
   const risks = items.filter(item => item.status === 'risk' || item.type === 'risk').length;
-  const assigned = [...new Set(items.flatMap(item => [item.ownerId, ...(item.people || [])]))].map(id => db.users.find(user => user.id === id)).filter(Boolean);
+  const assigned = [...new Set(items.flatMap(item => [item.ownerId, ...(item.people || [])]))].map(id => db.users.find(user => user.id === id && user.platformRole === 'user')).filter(Boolean);
   return <div className="page"><div className="page-narrow"><div className="page-head"><div><div className="eyebrow">Аналитика</div><h1 className="h1">{project.title}</h1></div></div><div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}><div className="card card-pad"><div className="eyebrow">Всего задач</div><div className="h1">{items.length}</div></div><div className="card card-pad"><div className="eyebrow">Выполнено</div><div className="h1">{Math.round(done / total * 100)}%</div></div><div className="card card-pad"><div className="eyebrow">Риски</div><div className="h1">{risks}</div></div><div className="card card-pad"><div className="eyebrow">Участники</div><div style={{ display: 'flex', marginTop: 14 }}>{assigned.map(user => <Avatar key={user.id} user={user} />)}</div></div></div></div></div>;
 }

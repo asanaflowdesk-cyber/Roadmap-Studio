@@ -59,3 +59,16 @@ src/features/settings/NotificationSettings.jsx
 src/features/notifications/NotificationBell.jsx
 supabase/migrations/001_product_schema.sql
 ```
+
+## Revision notes
+
+This revision adds:
+
+- phase accordions in the table view: `Фаза № · название`, expand/collapse by arrow;
+- redesigned Gantt view with month/day timeline, phase grouping and collapsible phases;
+- platform admins and superadmins are no longer added to project/team participant lists;
+- admins/superadmins manage visibility through platform permissions, not through project membership;
+- project creation by admin/superadmin requires selecting a working project manager;
+- role/access settings are available in Settings for platform admins;
+- old single-file legacy reference has been removed to avoid duplicate stale buttons and UI confusion;
+- localStorage key was bumped to `roadmap_studio_app_v2` so stale prototype data does not hide new modules.

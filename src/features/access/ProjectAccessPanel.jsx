@@ -10,11 +10,15 @@ const options = [
   ['guest', 'Гость']
 ];
 
+function canBeProjectParticipant(user) {
+  return user?.status !== 'blocked' && user?.platformRole === 'user';
+}
+
 export function ProjectAccessPanel({ project }) {
   const { db, setProjectAccess, hasPermission } = useApp();
   const canManage = hasPermission('project.member.changeRole', { projectId: project.id });
   const team = db.teams.find(item => item.id === project.teamId);
-  const users = db.users.filter(user => user.status !== 'blocked');
+  const users = db.users.filter(canBeProjectParticipant);
   const accessMap = Object.fromEntries((project.access || []).map(entry => [entry.userId, entry.role]));
 
   return (
@@ -24,7 +28,7 @@ export function ProjectAccessPanel({ project }) {
           <div>
             <div className="eyebrow">Проектные доступы</div>
             <h1 className="h1">{project.title}</h1>
-            <div className="subtitle">Гость видит проект только при явном добавлении сюда.</div>
+            <div className="subtitle">В список участников проекта попадают только рабочие пользователи. Админы и суперадмины управляют проектами через платформенные права и не дублируются как участники.</div>
           </div>
         </div>
         <div className="table-card">

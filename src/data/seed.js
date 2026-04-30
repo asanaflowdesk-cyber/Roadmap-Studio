@@ -1,7 +1,7 @@
 import { DEFAULT_ROLE_PERMISSIONS } from './permissions.js';
 
 export const SEED_DATA = {
-  appVersion: 1,
+  appVersion: 2,
   rolePermissions: DEFAULT_ROLE_PERMISSIONS,
   users: [
     {
@@ -62,7 +62,6 @@ export const SEED_DATA = {
       color: 'linear-gradient(135deg,#245B8F,#48A3B8)',
       members: [
         { userId: 'u2', role: 'teamLead' },
-        { userId: 'u3', role: 'member' },
         { userId: 'u4', role: 'member' }
       ]
     },
@@ -71,8 +70,7 @@ export const SEED_DATA = {
       name: 'BI & Analytics',
       color: 'linear-gradient(135deg,#596F9D,#7EA0C4)',
       members: [
-        { userId: 'u3', role: 'teamLead' },
-        { userId: 'u5', role: 'member' }
+        { userId: 'u5', role: 'teamLead' }
       ]
     }
   ],
@@ -89,10 +87,8 @@ export const SEED_DATA = {
       ownerId: 'u2',
       access: [
         { userId: 'u2', role: 'projectManager' },
-        { userId: 'u3', role: 'projectManager' },
         { userId: 'u4', role: 'member' },
-        { userId: 'u5', role: 'guest' },
-        { userId: 'u1', role: 'projectManager' }
+        { userId: 'u5', role: 'guest' }
       ]
     },
     {
@@ -107,8 +103,7 @@ export const SEED_DATA = {
       ownerId: 'u2',
       access: [
         { userId: 'u2', role: 'projectManager' },
-        { userId: 'u4', role: 'projectManager' },
-        { userId: 'u1', role: 'projectManager' }
+        { userId: 'u4', role: 'projectManager' }
       ]
     },
     {
@@ -120,11 +115,9 @@ export const SEED_DATA = {
       horizon: 'Q3 2026',
       start: '2026-05-01',
       due: '2026-08-01',
-      ownerId: 'u3',
+      ownerId: 'u5',
       access: [
-        { userId: 'u3', role: 'projectManager' },
-        { userId: 'u5', role: 'member' },
-        { userId: 'u1', role: 'projectManager' }
+        { userId: 'u5', role: 'projectManager' }
       ]
     }
   ],
@@ -141,7 +134,7 @@ export const SEED_DATA = {
       title: 'Определить продукт и программу страхования',
       result: 'Согласованные программы и условия',
       desc: 'Собрать параметры продукта, ограничения, тарифную сетку и условия согласования.',
-      status: 'progress', ownerId: 'u2', people: ['u3', 'u4'],
+      status: 'progress', ownerId: 'u2', people: ['u4'],
       start: '2024-05-16', due: '2024-05-22',
       smart: ['Продукт описан', 'Параметры утверждены', 'Есть владельцы', 'Нужно для запуска', 'До 22.05.2024'],
       subtasks: [
@@ -153,13 +146,13 @@ export const SEED_DATA = {
     {
       id: 'i2', projectId: 'p1', phaseId: 'ph1', type: 'task',
       title: 'Финансовая модель канала', result: 'Модель на 18 месяцев', desc: '',
-      status: 'new', ownerId: 'u3', people: [], start: '2024-05-23', due: '2024-05-25',
+      status: 'new', ownerId: 'u2', people: [], start: '2024-05-23', due: '2024-05-25',
       smart: ['', '', '', '', ''], subtasks: [], comments: []
     },
     {
       id: 'i3', projectId: 'p1', phaseId: 'ph2', type: 'task',
       title: 'Процесс продаж и страхования', result: 'Карта процесса', desc: '',
-      status: 'progress', ownerId: 'u4', people: ['u3'], start: '2024-05-26', due: '2024-05-31',
+      status: 'progress', ownerId: 'u4', people: [], start: '2024-05-26', due: '2024-05-31',
       smart: ['', '', '', '', ''], subtasks: [], comments: []
     },
     {
@@ -171,7 +164,7 @@ export const SEED_DATA = {
     {
       id: 'i5', projectId: 'p1', phaseId: 'ph3', type: 'milestone',
       title: 'Приёмка MVP', result: 'Протоколы и акты', desc: '',
-      status: 'done', ownerId: 'u2', people: ['u3', 'u4'], start: '2024-06-21', due: '2024-06-30',
+      status: 'done', ownerId: 'u2', people: ['u4'], start: '2024-06-21', due: '2024-06-30',
       smart: ['', '', '', '', ''], subtasks: [], comments: []
     },
     {
@@ -183,7 +176,7 @@ export const SEED_DATA = {
     {
       id: 'i7', projectId: 'p3', phaseId: 'ph5', type: 'task',
       title: 'Карта источников данных', result: 'Реестр источников', desc: '',
-      status: 'new', ownerId: 'u3', people: ['u5'], start: '2026-05-01', due: '2026-05-10',
+      status: 'new', ownerId: 'u5', people: [], start: '2026-05-01', due: '2026-05-10',
       smart: ['', '', '', '', ''], subtasks: [], comments: []
     }
   ],
@@ -211,7 +204,7 @@ export const SEED_DATA = {
   ],
   projectTemplates: [
     { id: 'tpl1', title: 'Запуск цифрового проекта', desc: 'Базовый шаблон: стратегия, проектирование, запуск и приемка.', category: 'Digital', visibility: 'all', teamId: null, isActive: true, isArchived: false, version: 1, createdBy: 'u1', updatedBy: 'u1', createdAt: '2026-04-30', updatedAt: '2026-04-30' },
-    { id: 'tpl2', title: 'BI / Power BI внедрение', desc: 'Шаблон для аналитических проектов: источники, модель, RLS, дашборды.', category: 'Analytics', visibility: 'all', teamId: 't2', isActive: true, isArchived: false, version: 1, createdBy: 'u3', updatedBy: 'u3', createdAt: '2026-04-30', updatedAt: '2026-04-30' }
+    { id: 'tpl2', title: 'BI / Power BI внедрение', desc: 'Шаблон для аналитических проектов: источники, модель, RLS, дашборды.', category: 'Analytics', visibility: 'all', teamId: 't2', isActive: true, isArchived: false, version: 1, createdBy: 'u5', updatedBy: 'u5', createdAt: '2026-04-30', updatedAt: '2026-04-30' }
   ],
   templatePhases: [
     { id: 'tph1', templateId: 'tpl1', title: 'Инициация и SMART', sort: 1, durationDays: 5 },
@@ -229,7 +222,7 @@ export const SEED_DATA = {
   ],
   templateVersions: [
     { id: 'tv1', templateId: 'tpl1', version: 1, changedBy: 'u1', changeComment: 'Создан стартовый шаблон', date: '2026-04-30', snapshot: {} },
-    { id: 'tv2', templateId: 'tpl2', version: 1, changedBy: 'u3', changeComment: 'Создан BI-шаблон', date: '2026-04-30', snapshot: {} }
+    { id: 'tv2', templateId: 'tpl2', version: 1, changedBy: 'u5', changeComment: 'Создан BI-шаблон', date: '2026-04-30', snapshot: {} }
   ],
   notificationRules: [
     { id: 'nr_phase_created', eventCode: 'phase.created', title: 'Добавлена новая фаза', isActive: true, channels: ['inApp'], targetRoles: ['projectManager', 'member'], respectProjectVisibility: true },
@@ -240,7 +233,10 @@ export const SEED_DATA = {
     { id: 'nr_deadline_soon', eventCode: 'task.deadline_soon', title: 'Скоро истекает срок', isActive: true, channels: ['inApp'], targetRoles: ['projectManager', 'member'], respectProjectVisibility: true, deadlineDays: 3 },
     { id: 'nr_member_added', eventCode: 'project.member_added', title: 'Вас добавили в проект', isActive: true, channels: ['inApp'], targetRoles: ['projectManager', 'member', 'guest'], respectProjectVisibility: true },
     { id: 'nr_role_changed', eventCode: 'project.role_changed', title: 'Изменилась роль в проекте', isActive: true, channels: ['inApp'], targetRoles: ['projectManager', 'member', 'guest'], respectProjectVisibility: true },
-    { id: 'nr_dates_changed', eventCode: 'dates.changed', title: 'Сроки изменились', isActive: true, channels: ['inApp'], targetRoles: ['projectManager', 'member'], respectProjectVisibility: true }
+    { id: 'nr_dates_changed', eventCode: 'project.dates_changed', title: 'Сроки проекта изменились', isActive: true, channels: ['inApp'], targetRoles: ['projectManager', 'member'], respectProjectVisibility: true },
+    { id: 'nr_phase_dates_changed', eventCode: 'phase.dates_changed', title: 'Сроки фазы изменились', isActive: true, channels: ['inApp'], targetRoles: ['projectManager', 'member'], respectProjectVisibility: true },
+    { id: 'nr_task_dates_changed', eventCode: 'task.dates_changed', title: 'Сроки задачи изменились', isActive: true, channels: ['inApp'], targetRoles: ['projectManager', 'member'], respectProjectVisibility: true },
+    { id: 'nr_project_from_template', eventCode: 'project.created_from_template', title: 'Проект создан из шаблона', isActive: true, channels: ['inApp'], targetRoles: ['projectManager'], respectProjectVisibility: true }
   ],
   notificationPreferences: [],
   notifications: [

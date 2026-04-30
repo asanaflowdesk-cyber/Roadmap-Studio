@@ -14,7 +14,7 @@ export function PeoplePage() {
         <div className="grid">
           {teams.map(team => <section className="table-card" key={team.id}>
             <div className="table-head" style={{ gridTemplateColumns: '1.6fr 1fr 1fr' }}><div>{team.name}</div><div>Проектов</div><div>Роль</div></div>
-            {team.members.map(member => {
+            {team.members.filter(member => db.users.find(user => user.id === member.userId)?.platformRole === 'user').map(member => {
               const user = db.users.find(item => item.id === member.userId);
               const count = db.projects.filter(project => project.teamId === team.id && project.access.some(entry => entry.userId === member.userId)).length;
               return <div className="table-row" style={{ gridTemplateColumns: '1.6fr 1fr 1fr' }} key={member.userId}><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Avatar user={user} /><div><div className="strong">{user?.name}</div><div className="small muted">{user?.email}</div></div></div><div>{count}</div><div><Badge value={member.role} /></div></div>;

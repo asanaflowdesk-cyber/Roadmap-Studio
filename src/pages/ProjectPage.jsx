@@ -16,7 +16,7 @@ export function ProjectPage() {
   if (!project) return <div className="page"><div className="empty"><div><strong>Проект не найден</strong><span>Вернитесь к списку проектов.</span></div></div></div>;
 
   if (route.tab === 'kanban') return <KanbanView items={items} phases={phases} />;
-  if (route.tab === 'gantt') return <GanttView items={items} phases={phases} />;
+  if (route.tab === 'gantt') return <GanttView project={project} items={items} phases={phases} />;
   if (route.tab === 'roadmap') return <RoadmapView items={items} phases={phases} />;
   if (route.tab === 'calendar') return <CalendarView items={items} phases={phases} />;
   if (route.tab === 'analytics') return <AnalyticsView project={project} items={items} db={db} />;

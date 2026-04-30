@@ -37,7 +37,7 @@ export function TeamsSettings() {
         </section>
         <section className="table-card">
           <div className="table-head" style={{ gridTemplateColumns: '1.5fr 1fr 160px' }}><div>Участник</div><div>Роль</div><div>Действия</div></div>
-          {activeTeam.members.map(member => {
+          {activeTeam.members.filter(member => db.users.find(user => user.id === member.userId)?.platformRole === 'user').map(member => {
             const user = db.users.find(item => item.id === member.userId);
             return <div className="table-row" style={{ gridTemplateColumns: '1.5fr 1fr 160px' }} key={member.userId}><div style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Avatar user={user} /><div><div className="strong">{user?.name}</div><div className="small muted">{user?.email}</div></div></div><div><select className="select" disabled={!hasPermission('team.member.changeRole', { teamId: activeTeam.id })} value={member.role} onChange={e => setTeamMember(activeTeam.id, member.userId, e.target.value)}><option value="member">Участник команды</option><option value="teamLead">Руководитель команды</option></select></div><div>{hasPermission('team.member.remove', { teamId: activeTeam.id }) ? <Button size="sm" variant="danger" onClick={() => removeTeamMember(activeTeam.id, member.userId)}>Удалить</Button> : null}</div></div>;
           })}
@@ -45,7 +45,7 @@ export function TeamsSettings() {
         {canMembers ? <section className="card card-pad">
           <div className="section-title">Добавить участника</div>
           <div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fill,minmax(230px,1fr))' }}>
-            {db.users.filter(user => !activeTeam.members.some(member => member.userId === user.id)).map(user => <button key={user.id} className="side-item" onClick={() => setTeamMember(activeTeam.id, user.id, 'member')}><Avatar user={user} size="sm" /> {user.name} <Badge value={user.platformRole} /></button>)}
+            {db.users.filter(user => user.status !== 'blocked' && user.platformRole === 'user' && !activeTeam.members.some(member => member.userId === user.id)).map(user => <button key={user.id} className="side-item" onClick={() => setTeamMember(activeTeam.id, user.id, 'member')}><Avatar user={user} size="sm" /> {user.name} <Badge value={user.platformRole} /></button>)}
           </div>
         </section> : null}
       </main> : <div className="empty card"><div><strong>Выберите команду</strong></div></div>}

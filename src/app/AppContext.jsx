@@ -191,6 +191,8 @@ export function AppProvider({ children }) {
   }
 
   function setTeamMember(teamId, userId, role) {
+    const targetUser = userById(db, userId);
+    if (!targetUser || targetUser.platformRole !== 'user') return false;
     const exists = teamById(db, teamId)?.members.some(member => member.userId === userId);
     const permission = exists ? 'team.member.changeRole' : 'team.member.add';
     if (!hasPermission(db, currentUser, permission, { teamId })) return false;
@@ -214,8 +216,8 @@ export function AppProvider({ children }) {
     if (!hasPermission(db, currentUser, 'team.project.create', { teamId })) return false;
     const project = {
       id: uid('p'), teamId, title: payload.title.trim(), desc: payload.desc || '', status: payload.status || 'new',
-      horizon: payload.horizon || '', start: payload.start || today(), due: payload.due || today(), ownerId: currentUser.id,
-      access: [{ userId: currentUser.id, role: 'projectManager' }], templateId: payload.templateId || null, isArchived: false
+      horizon: payload.horizon || '', start: payload.start || today(), due: payload.due || today(), ownerId: payload.managerId || (currentUser.platformRole === 'user' ? currentUser.id : null),
+      access: (payload.managerId || currentUser.platformRole === 'user') ? [{ userId: payload.managerId || currentUser.id, role: 'projectManager' }] : [], templateId: payload.templateId || null, isArchived: false
     };
     setDb(prev => ({ ...prev, projects: [...prev.projects, project] }), `Создан проект ${project.title}`);
     return project;
@@ -235,7 +237,7 @@ export function AppProvider({ children }) {
       const items = prev.templateItems.filter(item => item.templateId === templateId).map(item => ({
         id: uid('i'), projectId: project.id, phaseId: phaseMap[item.templatePhaseId] || phases[0]?.id,
         type: item.type || 'task', title: item.title, result: item.result || '', desc: item.desc || '',
-        status: 'new', priority: item.priority || 'normal', ownerId: currentUser.id, people: [],
+        status: 'new', priority: item.priority || 'normal', ownerId: project.ownerId || (currentUser.platformRole === 'user' ? currentUser.id : null), people: [],
         start: addDays(start, item.relativeStartDay), due: addDays(start, item.relativeDueDay),
         smart: ['', '', '', '', ''], subtasks: [], comments: []
       }));
@@ -250,7 +252,7 @@ export function AppProvider({ children }) {
     if (!project || (!hasPermission(db, currentUser, 'team.project.manageAccess', { teamId: project.teamId }) && !hasPermission(db, currentUser, 'project.member.changeRole', { projectId }))) return false;
     const datesChanged = 'start' in patch || 'due' in patch;
     setDb(prev => ({ ...prev, projects: prev.projects.map(item => item.id === projectId ? { ...item, ...patch } : item) }), `Изменен проект ${projectId}`);
-    if (datesChanged) emitNotification('dates.changed', { projectId, entityType: 'project', entityId: projectId, title: 'Сроки проекта изменились', message: `Изменены сроки проекта «${project.title}».` });
+    if (datesChanged) emitNotification('project.dates_changed', { projectId, entityType: 'project', entityId: projectId, title: 'Сроки проекта изменились', message: `Изменены сроки проекта «${project.title}».` });
     return true;
   }
 
@@ -266,6 +268,8 @@ export function AppProvider({ children }) {
   }
 
   function setProjectAccess(projectId, userId, role) {
+    const targetUser = userById(db, userId);
+    if (!targetUser || targetUser.platformRole !== 'user') return false;
     const permission = role === 'none' ? 'project.member.remove' : 'project.member.changeRole';
     if (!hasPermission(db, currentUser, permission, { projectId })) return false;
     const project = projectById(db, projectId);
@@ -297,7 +301,7 @@ export function AppProvider({ children }) {
     const item = {
       id: uid('i'), projectId, phaseId: payload.phaseId, type: payload.type || 'task', title: payload.title.trim(),
       result: payload.result || '', desc: payload.desc || '', status: payload.status || 'new', priority: payload.priority || 'normal',
-      ownerId: payload.ownerId || currentUser.id, people: payload.people || [], start: payload.start || today(), due: payload.due || today(),
+      ownerId: payload.ownerId || (currentUser.platformRole === 'user' ? currentUser.id : null), people: payload.people || [], start: payload.start || today(), due: payload.due || today(),
       smart: payload.smart || ['', '', '', '', ''], subtasks: [], comments: [], isArchived: false
     };
     setDb(prev => ({ ...prev, items: [...prev.items, item] }), `Создана задача ${item.title}`);
@@ -314,7 +318,7 @@ export function AppProvider({ children }) {
     const datesChanged = 'start' in patch || 'due' in patch;
     setDb(prev => ({ ...prev, items: prev.items.map(entry => entry.id === itemId ? { ...entry, ...patch } : entry) }), `Изменена задача ${itemId}`);
     if (patch.status === 'done' && item.status !== 'done') emitNotification('task.completed', { projectId: item.projectId, entityType: 'task', entityId: item.id, title: 'Задача завершена', message: `Задача «${item.title}» завершена.` });
-    if (datesChanged) emitNotification('dates.changed', { projectId: item.projectId, entityType: 'task', entityId: item.id, title: 'Сроки задачи изменились', message: `Изменены сроки задачи «${item.title}».` });
+    if (datesChanged) emitNotification('task.dates_changed', { projectId: item.projectId, entityType: 'task', entityId: item.id, title: 'Сроки задачи изменились', message: `Изменены сроки задачи «${item.title}».` });
     return true;
   }
 

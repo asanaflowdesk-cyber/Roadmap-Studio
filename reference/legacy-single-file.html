@@ -1,0 +1,1841 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Roadmap Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Forum&family=Manrope:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#EFF3F8;--paper:#FFF;--paper-soft:#F4F7FB;--paper-deep:#EAF0F7;
+  --ink:#12253A;--text:#2E4459;--muted:#6B84A0;--soft:#9DB4CC;
+  --line:rgba(18,37,58,.10);--line-soft:rgba(18,37,58,.06);
+  --blue:#1565C0;--blue2:#1976D2;--blue-soft:#DDEEFF;
+  --teal:#0097A7;--green:#00897B;--green-soft:#E0F2F1;
+  --red:#E53935;--red-soft:#FFEBEE;--amber:#F57C00;
+  --shadow:0 1px 4px rgba(18,37,58,.08),0 6px 20px rgba(18,37,58,.09);
+  --shadow-sm:0 1px 2px rgba(18,37,58,.05),0 3px 10px rgba(18,37,58,.06);
+  --r:14px;--r-sm:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Manrope',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5}
+button,input,select,textarea{font:inherit;cursor:pointer}
+input,select,textarea{cursor:text}
+
+/* ─ UTILITIES ─ */
+.hidden{display:none!important}
+.flex{display:flex;align-items:center}
+.gap4{gap:4px}.gap8{gap:8px}.gap12{gap:12px}.gap16{gap:16px}
+.f1{flex:1;min-width:0}
+.bold{font-weight:800}
+.muted{color:var(--muted)}
+.small{font-size:11px}
+.ellipsis{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ─ LOGIN ─ */
+#loginScreen{position:fixed;inset:0;background:linear-gradient(145deg,#E8F0FA,#EFF4FB);display:flex;align-items:center;justify-content:center;z-index:300}
+.login-box{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:36px 40px;width:400px;box-shadow:0 8px 40px rgba(18,37,58,.12)}
+.login-logo{font-family:'Forum',serif;font-size:28px;background:linear-gradient(135deg,#1565C0,#0097A7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--muted);margin-bottom:28px}
+.login-section-label{font-size:9px;text-transform:uppercase;letter-spacing:.12em;font-weight:900;color:var(--soft);margin-bottom:8px}
+.user-list{display:flex;flex-direction:column;gap:6px;margin-bottom:20px}
+.user-btn{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--paper-soft);transition:.13s;text-align:left}
+.user-btn:hover{border-color:rgba(21,101,192,.3);background:#EEF4FF}
+.user-btn.sel{border-color:var(--blue);background:#EEF4FF;box-shadow:0 0 0 3px rgba(21,101,192,.10)}
+.user-av{width:32px;height:32px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;flex-shrink:0}
+.user-name{font-size:13px;font-weight:700;color:var(--ink)}
+.user-role-tag{font-size:10px;font-weight:800;padding:1px 7px;border-radius:999px;margin-left:auto}
+.tag-admin{background:var(--blue-soft);color:var(--blue)}
+.tag-lead{background:#E0F2F1;color:#00695C}
+.tag-member{background:#FFF3E0;color:#E65100}
+.tag-viewer{background:var(--paper-deep);color:var(--muted)}
+.login-btn{width:100%;height:42px;border:0;border-radius:12px;background:linear-gradient(135deg,#1565C0,#1976D2);color:#fff;font-weight:800;font-size:14px;box-shadow:0 4px 14px rgba(21,101,192,.28);transition:.13s}
+.login-btn:hover{background:linear-gradient(135deg,#1976D2,#1E88E5)}
+.login-btn:disabled{opacity:.45}
+
+/* ─ APP SHELL ─ */
+#appShell{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ─ TOPBAR row 1 (always visible) ─ */
+.topbar{background:rgba(255,255,255,.95);backdrop-filter:blur(16px);border-bottom:1px solid var(--line);display:flex;align-items:center;padding:0 16px;gap:4px;position:relative;z-index:30;flex-shrink:0;height:48px}
+.topbar-logo{font-family:'Forum',serif;font-size:19px;background:linear-gradient(135deg,#1565C0,#0097A7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;flex-shrink:0;margin-right:8px;cursor:pointer;user-select:none}
+.topbar-logo:hover{opacity:.75}
+.topbar-div{width:1px;height:18px;background:var(--line);flex-shrink:0;margin:0 6px}
+/* main nav tabs — static, always shown */
+.mnav{display:flex;align-items:center;gap:1px}
+.mtab{height:32px;border:0;background:transparent;color:var(--muted);border-radius:9px;padding:0 12px;font-weight:800;font-size:12px;transition:.12s;display:flex;align-items:center;gap:6px;white-space:nowrap;cursor:pointer}
+.mtab:hover{background:rgba(21,101,192,.07);color:var(--ink)}
+.mtab.active{background:linear-gradient(135deg,#1565C0,#1976D2);color:#fff}
+.mtab-ico{display:flex;align-items:center}
+/* team selector pill */
+.team-btn{display:flex;align-items:center;gap:6px;height:32px;padding:0 11px;border:1px solid var(--line);border-radius:9px;background:var(--paper-soft);font-size:12px;font-weight:700;color:var(--ink);cursor:pointer;transition:.12s;flex-shrink:0;white-space:nowrap}
+.team-btn:hover{border-color:rgba(21,101,192,.3);background:#EEF4FF}
+.team-btn-dot{width:8px;height:8px;border-radius:3px;flex-shrink:0}
+.team-btn-chevron{font-size:10px;color:var(--soft)}
+/* right */
+.topbar-right{display:flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0}
+.topbar-av{width:28px;height:28px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;flex-shrink:0}
+.topbar-uname{font-size:12px;font-weight:700;color:var(--ink);white-space:nowrap}
+
+/* ─ TOPBAR row 2 — project context bar ─ */
+.ctx-bar{background:rgba(248,251,255,.95);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);display:none;align-items:center;padding:0 14px;gap:3px;height:38px;flex-shrink:0;z-index:20}
+.ctx-bar.show{display:flex}
+.ctx-back{height:26px;border:0;background:transparent;color:var(--muted);border-radius:7px;padding:0 7px;font-weight:800;font-size:14px;cursor:pointer;line-height:1}
+.ctx-back:hover{color:var(--blue);background:rgba(21,101,192,.07)}
+.ctx-proj-title{font-size:12px;font-weight:700;color:var(--ink);max-width:240px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin:0 6px}
+.vtab{height:26px;border:0;background:transparent;color:var(--muted);border-radius:7px;padding:0 9px;font-weight:800;font-size:11px;transition:.12s;cursor:pointer}
+.vtab:hover{background:rgba(21,101,192,.07);color:var(--ink)}
+.vtab.active{background:linear-gradient(135deg,#1565C0,#1976D2);color:#fff}
+.ctx-right{margin-left:auto;display:flex;align-items:center;gap:6px}
+.topbar-search{height:24px;width:140px;background:var(--paper-soft);border:1px solid var(--line);border-radius:7px;padding:0 8px;outline:0;color:var(--ink);font-size:11px}
+.topbar-search:focus{border-color:rgba(21,101,192,.4);background:#fff}
+
+/* ─ DROPDOWN MENU ─ */
+.dropdown{position:absolute;top:calc(100% + 5px);background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 8px 28px rgba(18,37,58,.14);z-index:100;min-width:200px;padding:6px 0;display:none}
+.dropdown.open{display:block}
+.dropdown-item{display:flex;align-items:center;gap:9px;padding:8px 14px;cursor:pointer;font-size:12px;font-weight:700;color:var(--ink);transition:.12s}
+.dropdown-item:hover{background:var(--paper-soft);color:var(--blue)}
+.dropdown-item.active{color:var(--blue)}
+.dropdown-sep{height:1px;background:var(--line);margin:5px 0}
+.dropdown-section{padding:6px 14px 3px;font-size:9px;text-transform:uppercase;letter-spacing:.12em;font-weight:900;color:var(--soft)}
+
+/* ─ MAIN ─ */
+.main-area{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.main-content{flex:1;min-height:0;overflow:hidden}
+.btn{height:30px;border:1px solid var(--line);border-radius:9px;background:var(--paper);color:var(--ink);padding:0 12px;font-weight:700;font-size:12px;display:inline-flex;align-items:center;gap:6px;transition:.13s;box-shadow:var(--shadow-sm)}
+.btn:hover{background:var(--paper-soft);border-color:rgba(21,101,192,.2);transform:translateY(-1px)}
+.btn.primary{background:linear-gradient(135deg,#1565C0,#1976D2);border-color:transparent;color:#fff;box-shadow:0 3px 10px rgba(21,101,192,.25)}
+.btn.primary:hover{background:linear-gradient(135deg,#1976D2,#1E88E5)}
+.btn.sm{height:25px;padding:0 9px;font-size:11px;border-radius:7px}
+.btn.danger{background:var(--red-soft);color:var(--red);border-color:rgba(229,57,53,.15)}
+.btn.ghost{background:transparent;border-color:transparent;box-shadow:none;color:var(--muted)}
+.btn:disabled{opacity:.4;pointer-events:none}
+
+/* ─ FORMS ─ */
+.field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+.lbl{font-size:9px;text-transform:uppercase;letter-spacing:.1em;font-weight:900;color:var(--soft)}
+.inp,.sel,.txta{width:100%;border:1px solid var(--line);background:var(--paper-soft);border-radius:10px;padding:8px 10px;outline:0;color:var(--ink);font-size:13px;transition:.13s}
+.txta{min-height:60px;resize:vertical;line-height:1.45}
+.inp:focus,.sel:focus,.txta:focus{border-color:rgba(21,101,192,.4);box-shadow:0 0 0 3px rgba(21,101,192,.08);background:#fff}
+.form-2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-2 .field{margin-bottom:0}
+
+/* ─ CARD ─ */
+.card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow-sm)}
+
+/* ─ BADGES ─ */
+.badge{height:20px;border-radius:999px;padding:0 8px;display:inline-flex;align-items:center;font-size:10px;font-weight:900;white-space:nowrap}
+.badge.new{background:var(--blue-soft);color:var(--blue)}
+.badge.progress{background:#E0F2F1;color:#00695C}
+.badge.done{background:var(--green-soft);color:var(--green)}
+.badge.risk{background:var(--red-soft);color:var(--red)}
+.badge.approval{background:#E0F7FA;color:var(--teal)}
+
+/* ─ ADMIN PANEL ─ */
+.admin-wrap{height:100%;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+.admin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.admin-title{font-family:'Forum',serif;font-size:24px;color:var(--ink);font-weight:400}
+.admin-desc{font-size:12px;color:var(--muted);margin-top:2px}
+
+/* teams table */
+.data-table{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow-sm)}
+.dt-head{display:grid;padding:10px 16px;background:var(--paper-soft);border-bottom:1px solid var(--line);font-size:9px;text-transform:uppercase;letter-spacing:.1em;font-weight:900;color:var(--soft)}
+.dt-row{display:grid;padding:10px 16px;border-bottom:1px solid var(--line-soft);align-items:center;transition:.12s}
+.dt-row:last-child{border-bottom:0}
+.dt-row:hover{background:var(--paper-soft)}
+.dt-av{width:30px;height:30px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;color:#fff;flex-shrink:0}
+.dt-name{font-size:13px;font-weight:700;color:var(--ink)}
+.dt-sub{font-size:11px;color:var(--muted)}
+
+/* access matrix */
+.matrix-wrap{overflow-x:auto}
+.matrix{border-collapse:collapse;width:100%;min-width:600px}
+.matrix th,.matrix td{padding:9px 12px;border:1px solid var(--line);text-align:left;font-size:12px;vertical-align:middle}
+.matrix th{background:var(--paper-soft);font-weight:900;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--soft)}
+.matrix td:first-child{font-weight:700;color:var(--ink);white-space:nowrap}
+.matrix tr:hover td{background:var(--paper-soft)}
+.matrix-user{display:flex;align-items:center;gap:8px}
+.access-sel{height:26px;border:1px solid var(--line);border-radius:7px;background:var(--paper-soft);padding:0 7px;font-size:11px;font-weight:700;color:var(--ink);outline:0}
+.access-sel:focus{border-color:rgba(21,101,192,.4)}
+.access-sel.full{color:var(--green)}
+.access-sel.read{color:var(--blue)}
+.access-sel.none{color:var(--soft)}
+
+
+/* ─ ROLE MATRIX / PERMISSIONS ─ */
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*){
+  animation-duration:.25s;
+  animation-timing-function:cubic-bezier(.19,1,.22,1);
+}
+.perm-shell{background:var(--paper);color:var(--text);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow-sm);overflow:hidden}
+.perm-head{display:flex;align-items:flex-start;gap:16px;justify-content:space-between;margin-bottom:14px}
+.perm-title{font-family:'Forum',serif;font-size:28px;font-weight:400;color:var(--ink);line-height:1.1}
+.perm-sub{font-size:12px;color:var(--muted);margin-top:5px;max-width:820px}
+.perm-tabs{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.perm-tab{height:30px;border:1px solid var(--line);background:var(--paper-soft);color:var(--muted);border-radius:999px;padding:0 12px;font-size:11px;font-weight:800;cursor:pointer;transition:.14s}
+.perm-tab:hover{background:#EEF4FF;color:var(--ink);border-color:rgba(21,101,192,.22)}
+.perm-tab.active{background:linear-gradient(135deg,#1565C0,#1976D2);color:#fff;border-color:transparent;box-shadow:0 3px 10px rgba(21,101,192,.20)}
+.perm-toolbar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:0 0 12px;flex-wrap:wrap}
+.perm-hint{font-size:11px;color:var(--muted);font-weight:700;background:var(--paper-soft);border:1px solid var(--line);border-radius:999px;padding:5px 9px}
+.perm-role-grid{display:grid;grid-template-columns:repeat(3,minmax(180px,1fr));gap:10px}
+.perm-role-card{background:var(--paper-soft);border:1px solid var(--line);border-radius:12px;padding:13px;min-height:136px;box-shadow:var(--shadow-sm)}
+.perm-role-card:hover{border-color:rgba(21,101,192,.22);background:#FAFCFF}
+.perm-role-chip{display:inline-flex;align-items:center;height:20px;border-radius:999px;padding:0 8px;font-size:10px;font-weight:900;margin-bottom:9px;border:1px solid transparent}
+.perm-level{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--soft);font-weight:900;margin-bottom:7px}
+.perm-desc{font-size:12px;line-height:1.55;color:var(--text);font-weight:700}
+.perm-table-wrap{border:1px solid var(--line);border-radius:14px;overflow:auto;background:var(--paper);box-shadow:var(--shadow-sm)}
+.perm-table{width:100%;min-width:880px;border-collapse:collapse;color:var(--text)}
+.perm-table th,.perm-table td{border-bottom:1px solid var(--line-soft);padding:9px 10px;font-size:12px;text-align:center;vertical-align:middle}
+.perm-table th:first-child,.perm-table td:first-child{text-align:left;width:330px;font-weight:800;color:var(--ink)}
+.perm-table th{position:sticky;top:0;z-index:2;background:var(--paper-soft);color:var(--muted);font-size:10px;font-weight:900;white-space:nowrap;border-bottom:1px solid var(--line);text-transform:uppercase;letter-spacing:.05em}
+.perm-table tr:hover td{background:#FAFCFF}
+.perm-section-row td{background:var(--paper-deep)!important;color:var(--soft)!important;font-size:10px!important;text-transform:uppercase;letter-spacing:.11em;font-weight:900;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.perm-action-key{display:block;font-size:9px;color:var(--soft);font-weight:800;margin-top:2px;letter-spacing:.02em}
+.perm-cell{display:flex;align-items:center;justify-content:center;gap:6px;min-height:28px}
+.perm-check{width:15px;height:15px;accent-color:var(--blue);cursor:pointer}
+.perm-check:disabled{opacity:.45;cursor:not-allowed}
+.perm-scope{height:24px;max-width:82px;border:1px solid var(--line);border-radius:7px;background:var(--paper-soft);color:var(--muted);font-size:10px;font-weight:800;padding:0 4px;outline:0}
+.perm-scope:focus{border-color:rgba(21,101,192,.35);background:#fff}
+.perm-lock{font-size:10px;color:var(--soft);font-weight:900}
+.perm-auto{display:inline-flex;align-items:center;gap:5px;color:var(--green);font-size:11px;font-weight:900}
+.perm-foot{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;color:var(--muted);font-size:11px;font-weight:700}
+.perm-note{display:inline-flex;align-items:center;gap:5px;background:var(--paper-soft);border:1px solid var(--line);border-radius:999px;padding:5px 8px}
+.perm-note i{font-style:normal;font-weight:900;color:var(--blue)}
+.perm-ok{color:var(--green);font-size:17px;font-weight:900}
+.perm-no{color:var(--soft);font-size:16px;font-weight:900}
+.perm-partial{color:var(--amber);font-size:15px;font-weight:900}
+.perm-own{color:var(--blue);font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.03em}
+@media(max-width:900px){.perm-head{flex-direction:column}.perm-tabs{justify-content:flex-start}.perm-role-grid{grid-template-columns:1fr}.perm-shell{padding:12px}}
+
+/* ─ TEAM VIEW ─ */
+.team-header{padding:16px 20px 0;flex-shrink:0}
+.team-logo{width:40px;height:40px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;color:#fff;flex-shrink:0}
+.team-name{font-family:'Forum',serif;font-size:22px;color:var(--ink);font-weight:400}
+.proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:13px}
+.proj-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow-sm);cursor:pointer;position:relative;overflow:hidden;transition:.15s}
+.proj-card::before{content:'';position:absolute;left:0;top:0;width:100%;height:3px;background:linear-gradient(90deg,#1565C0,#29B6F6,#0097A7);border-radius:var(--r) var(--r) 0 0}
+.proj-card:hover{transform:translateY(-2px);border-color:rgba(21,101,192,.22);box-shadow:0 6px 24px rgba(18,37,58,.12)}
+.proj-title{font-family:'Forum',serif;font-size:18px;color:var(--ink);font-weight:400;margin:8px 0 4px}
+.proj-desc{font-size:11px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.proj-footer{margin-top:10px;padding-top:8px;border-top:1px solid var(--line-soft);display:flex;align-items:center;justify-content:space-between}
+.pbar{height:3px;background:rgba(21,101,192,.10);border-radius:999px;overflow:hidden;margin-top:5px}
+.pbar span{display:block;height:100%;background:linear-gradient(90deg,#1565C0,#29B6F6);border-radius:999px}
+.pav{width:20px;height:20px;border-radius:999px;background:linear-gradient(135deg,#1565C0,#29B6F6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900;border:2px solid #fff}
+.pav+.pav{margin-left:-5px}
+
+/* ─ PROJECT DETAIL ─ */
+.detail-shell{margin:0;flex:1;min-height:0;display:grid;grid-template-rows:auto minmax(0,1fr);background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.dhead{padding:10px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;background:#fff}
+.dtitle{font-family:'Forum',serif;font-size:20px;color:var(--ink);font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ddesc{font-size:11px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vtabs{height:42px;border-bottom:1px solid var(--line);background:var(--paper-soft);display:flex;align-items:center;padding:0 10px;gap:3px}
+.vtab{height:28px;border:0;background:transparent;color:var(--muted);border-radius:7px;padding:0 9px;font-weight:800;font-size:11px;transition:.12s}
+.vtab:hover{background:rgba(21,101,192,.07);color:var(--ink)}
+.vtab.active{background:linear-gradient(135deg,#1565C0,#1976D2);color:#fff}
+.vtab-right{margin-left:auto;display:flex;gap:6px;align-items:center}
+.tsearch{width:160px;height:26px;border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:0 8px;outline:0;color:var(--ink);font-size:11px}
+.dcontent{min-height:0;height:100%}
+
+/* table view */
+.cgrid{height:100%;display:grid;grid-template-columns:minmax(0,1fr) minmax(420px,36%);min-height:0}
+.lpane{min-width:0;min-height:0;border-right:1px solid var(--line);overflow:hidden;display:flex;flex-direction:column}
+.rpane{min-height:0;overflow-y:auto;overflow-x:hidden;background:var(--paper-soft)}
+.planner{flex:1;min-height:0;display:grid;grid-template-columns:190px minmax(0,1fr)}
+.phase-rail{min-height:0;overflow-y:auto;border-right:1px solid var(--line);background:var(--paper-deep);padding:10px;scrollbar-width:none}
+.phase-rail::-webkit-scrollbar{display:none}
+.prail-title{font-size:9px;text-transform:uppercase;letter-spacing:.12em;font-weight:900;color:var(--soft);margin-bottom:7px}
+.pvtoggle{display:grid;grid-template-columns:1fr 1fr;background:rgba(21,101,192,.07);border-radius:10px;padding:3px;gap:3px;margin-bottom:8px}
+.pvtoggle button{height:24px;border:0;border-radius:7px;background:transparent;color:var(--muted);font-size:11px;font-weight:800}
+.pvtoggle button.active{background:var(--paper);color:var(--blue);box-shadow:var(--shadow-sm)}
+.pcard{width:100%;text-align:left;border:1px solid var(--line);background:var(--paper);border-radius:10px;padding:8px;margin-bottom:6px;transition:.12s;box-shadow:var(--shadow-sm)}
+.pcard:hover{border-color:rgba(21,101,192,.22)}
+.pcard.active{background:#EEF4FF;border-color:rgba(21,101,192,.28);box-shadow:inset 3px 0 0 var(--blue),var(--shadow-sm)}
+.pname{font-size:11px;font-weight:800;color:var(--ink)}
+.pmeta{font-size:10px;color:var(--muted);font-weight:700;margin-top:3px}
+.task-area{min-width:0;min-height:0;overflow-y:auto;overflow-x:hidden;background:#FAFCFF}
+.thead{display:grid;grid-template-columns:minmax(200px,1.4fr) minmax(140px,1fr) 82px 82px 74px;gap:7px;height:36px;position:sticky;top:0;z-index:5;background:rgba(255,255,255,.97);border-bottom:1px solid var(--line);padding:0 10px;font-size:9px;text-transform:uppercase;letter-spacing:.09em;color:var(--soft);font-weight:900;align-items:center}
+.pstrip{height:32px;position:sticky;top:36px;z-index:4;display:flex;align-items:center;gap:7px;padding:0 10px;background:linear-gradient(90deg,#DDEEFF,rgba(255,255,255,.97));border-bottom:1px solid var(--line);font-size:11px;color:var(--ink);font-weight:800}
+.pstrip span:last-child{margin-left:auto;font-size:10px;color:var(--muted)}
+.trow{display:grid;grid-template-columns:minmax(200px,1.4fr) minmax(140px,1fr) 82px 82px 74px;gap:7px;min-height:48px;padding:7px 10px;border-bottom:1px solid var(--line-soft);cursor:pointer;transition:.12s;align-items:center}
+.trow:hover{background:#F0F6FF}
+.trow.active{background:#EEF4FF;box-shadow:inset 3px 0 0 var(--blue)}
+.tmain{display:grid;grid-template-columns:7px minmax(0,1fr);gap:7px;min-width:0;align-items:start}
+.dot{width:7px;height:7px;border-radius:999px;margin-top:3px;background:var(--blue);flex-shrink:0}
+.dot.milestone{background:var(--teal)}.dot.risk{background:var(--red)}.dot.done{background:var(--green)}
+.ttitle{font-size:12px;font-weight:800;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tsub{font-size:10px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tres{font-size:11px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tdate{font-size:10px;color:var(--text);font-weight:700;line-height:1.35}
+.avs{display:flex}
+.tav{width:19px;height:19px;border-radius:999px;background:linear-gradient(135deg,#1565C0,#29B6F6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:900;border:2px solid #fff}
+.tav+.tav{margin-left:-5px}
+
+/* editor */
+.editor{padding:12px;display:grid;gap:9px;align-content:start}
+.ehero{background:#fff;border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:13px;padding:12px;box-shadow:var(--shadow-sm)}
+.ekicker{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:7px}
+.etitle{font-family:'Forum',serif;font-size:20px;color:var(--ink);font-weight:400}
+.esec{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:11px;box-shadow:var(--shadow-sm)}
+.esec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.esec-title{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--soft);font-weight:900}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+.fsm{display:flex;flex-direction:column;gap:4px}
+.fsm.full{grid-column:1/-1}
+.lsm{font-size:9px;text-transform:uppercase;letter-spacing:.09em;font-weight:900;color:var(--soft)}
+.isml{width:100%;border:1px solid var(--line);background:var(--paper-soft);border-radius:9px;padding:6px 8px;outline:0;color:var(--ink);font-size:12px}
+.isml:focus{border-color:rgba(21,101,192,.4);box-shadow:0 0 0 3px rgba(21,101,192,.07);background:#fff}
+.txsm{min-height:50px;resize:vertical;line-height:1.4}
+.sub-row{display:grid;grid-template-columns:16px minmax(0,1fr) 96px 22px;gap:5px;align-items:center;border:1px solid var(--line);border-radius:9px;padding:5px;margin-bottom:4px;background:var(--paper-soft)}
+.chk{width:14px;height:14px;accent-color:var(--blue)}
+.mini-inp{border:0;outline:0;background:transparent;color:var(--ink);font-size:12px;width:100%}
+.mini-date{height:22px;border:1px solid var(--line);border-radius:7px;background:var(--paper);padding:0 6px;font-size:10px;color:var(--muted)}
+.mini-del{border:0;background:transparent;color:var(--soft);font-size:13px;border-radius:5px;padding:0;line-height:1}
+.mini-del:hover{background:var(--red-soft);color:var(--red)}
+.smart-row{display:grid;grid-template-columns:24px minmax(0,1fr);gap:7px;align-items:start;margin-bottom:7px}
+.sletter{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#1565C0,#1976D2);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:9px}
+.smeta{font-size:9px;color:var(--muted);font-weight:800;margin-bottom:3px}
+.cmt{border:1px solid var(--line);background:var(--paper-soft);border-radius:9px;padding:7px 9px;margin-bottom:5px}
+.cmt strong{font-size:11px}.cmt p{font-size:12px;color:var(--muted);margin-top:2px}.cmt small{font-size:10px;color:var(--soft)}
+
+/* kanban */
+.kb-wrap{height:100%;overflow:auto;padding:12px;background:#FAFCFF}
+.kb-grid{display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));gap:10px;height:100%}
+.kb-col{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:10px;box-shadow:var(--shadow-sm);display:flex;flex-direction:column;min-height:0}
+.kb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;padding-bottom:7px;border-bottom:2px solid var(--line);flex-shrink:0}
+.kb-lbl{font-size:11px;font-weight:900;color:var(--ink)}
+.kb-cnt{font-size:10px;font-weight:800;background:var(--paper-soft);border:1px solid var(--line);border-radius:999px;padding:1px 7px;color:var(--muted)}
+.kb-body{overflow-y:auto;flex:1;scrollbar-width:thin}
+.kb-card{background:var(--paper-soft);border:1px solid var(--line);border-radius:9px;padding:8px;margin-bottom:5px;cursor:pointer;transition:.12s}
+.kb-card:hover{background:#EEF4FF;border-color:rgba(21,101,192,.22)}
+.kb-title{font-size:11px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.kb-phase{font-size:9px;font-weight:800;background:var(--blue-soft);color:var(--blue);border-radius:4px;padding:1px 5px;display:inline-block;margin-bottom:3px}
+
+/* modal */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(18,37,58,.25);backdrop-filter:blur(5px);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal-bg.open{display:flex}
+.modal{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 16px 56px rgba(18,37,58,.14);width:480px;max-width:100%}
+.modal h2{font-family:'Forum',serif;font-size:24px;font-weight:400;color:var(--ink);margin-bottom:16px}
+.modal-foot{display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:12px;border-top:1px solid var(--line)}
+
+/* toast */
+.toast{position:fixed;right:18px;bottom:18px;background:linear-gradient(135deg,#1565C0,#1976D2);color:#fff;border-radius:12px;padding:9px 14px;font-size:12px;font-weight:800;box-shadow:0 5px 18px rgba(21,101,192,.28);display:none;z-index:200}
+.toast.show{display:block}
+
+/* empty */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:50px 20px;gap:10px;text-align:center}
+.empty-ico{font-size:36px;opacity:.2}
+.empty-t{font-size:15px;font-weight:800;color:var(--ink)}
+.empty-s{font-size:12px;color:var(--muted);max-width:300px}
+
+/* scrollable page */
+.page-scroll{height:100%;overflow-y:auto;padding:16px 20px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">Roadmap Studio</div>
+    <div class="login-sub">Управление командами и проектами</div>
+    <div class="login-section-label">Выберите пользователя</div>
+    <div class="user-list" id="userList"></div>
+    <button class="login-btn" id="loginBtn" onclick="doLogin()" disabled>Войти →</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appShell" class="hidden">
+
+  <!-- ROW 1: main nav always visible -->
+  <header class="topbar" id="topbar">
+    <div class="topbar-logo" onclick="gotoHome()">Roadmap Studio</div>
+    <div class="topbar-div"></div>
+
+    <!-- static main nav -->
+    <nav class="mnav" id="mainNav">
+      <button class="mtab" id="mnav-projects" onclick="gotoTeamView()">
+        <span class="mtab-ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".9"/><rect x="9" y="1" width="6" height="6" rx="1.5" fill="currentColor" opacity=".6"/><rect x="1" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".6"/><rect x="9" y="9" width="6" height="6" rx="1.5" fill="currentColor" opacity=".35"/></svg></span>
+        Карты проектов
+      </button>
+      <button class="mtab" id="mnav-overview" onclick="gotoOverview()">
+        <span class="mtab-ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="4" height="14" rx="1.5" fill="currentColor" opacity=".9"/><rect x="6" y="1" width="4" height="9" rx="1.5" fill="currentColor" opacity=".7"/><rect x="11" y="1" width="4" height="12" rx="1.5" fill="currentColor" opacity=".5"/></svg></span>
+        Обзор
+      </button>
+      <button class="mtab" id="mnav-people" onclick="gotoPeople()">
+        <span class="mtab-ico"><svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="3" fill="currentColor" opacity=".9"/><path d="M1 13c0-2.76 2.24-5 5-5s5 2.24 5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".9"/><circle cx="12.5" cy="4.5" r="2" fill="currentColor" opacity=".5"/><path d="M14.5 11.5c0-1.66-1-3-2.5-3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity=".5"/></svg></span>
+        Люди
+      </button>
+    </nav>
+
+    <div class="topbar-div"></div>
+
+    <div class="topbar-right" id="topbarRight">
+      <!-- My tasks pill -->
+      <button class="mtab" id="mnav-mytasks" onclick="gotoMyTasks()" style="height:28px;padding:0 10px;border:1px solid var(--line);border-radius:999px;font-size:11px;background:var(--paper-soft)">
+        <span style="font-size:12px">☑</span> Мои задачи
+      </button>
+      <!-- Settings button -->
+      <button class="mtab" id="mnav-settings" onclick="gotoSettings()" style="height:28px;padding:0 10px;border:1px solid var(--line);border-radius:999px;font-size:11px;background:var(--paper-soft)">
+        <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 1.5v1M8 13.5v1M1.5 8h1M13.5 8h1M3.4 3.4l.7.7M11.9 11.9l.7.7M3.4 12.6l.7-.7M11.9 4.1l.7-.7" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        Настройки
+      </button>
+      <div class="topbar-div"></div>
+      <!-- Avatar — only logout in dropdown -->
+      <div style="position:relative">
+        <button onclick="toggleDropdown('userDrop')" style="display:flex;align-items:center;gap:7px;border:0;background:transparent;padding:2px 4px;border-radius:8px;cursor:pointer;transition:.12s" onmouseover="this.style.background='var(--paper-soft)'" onmouseout="this.style.background='transparent'">
+          <div class="topbar-av" id="topAv"></div>
+          <span id="topName" class="topbar-uname"></span>
+        </button>
+        <div class="dropdown" id="userDrop" style="right:0;left:auto;min-width:140px">
+          <div class="dropdown-item" onclick="logout()" style="color:var(--red)">← Выйти</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ROW 2: project context bar (shown only inside a project) -->
+  <div class="ctx-bar" id="ctxBar">
+    <button class="ctx-back" onclick="backToTeam()">‹</button>
+    <span class="ctx-proj-title" id="ctxTitle"></span>
+    <div style="width:1px;height:14px;background:var(--line);margin:0 4px"></div>
+    <div id="ctxTabs" style="display:flex;align-items:center;gap:2px"></div>
+    <div class="ctx-right" id="ctxRight"></div>
+  </div>
+
+  <div class="main-area">
+    <div class="main-content" id="mainContent"></div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal" id="modalBox"></div>
+</div>
+<div class="toast" id="toastEl"></div>
+
+<script>
+// ── UTILS ────────────────────────────────────────────────
+const uid=()=>Math.random().toString(36).slice(2,8)+Date.now().toString(36).slice(-4);
+const today=()=>new Date().toISOString().slice(0,10);
+const fmt=d=>d?new Date(d+'T00:00:00').toLocaleDateString('ru-RU',{day:'2-digit',month:'short'}):'—';
+const esc=v=>String(v??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const $=id=>document.getElementById(id);
+const toast=msg=>{const e=$('toastEl');e.textContent=msg;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1800)};
+const openModal=()=>$('modalBg').classList.add('open');
+const closeModal=()=>$('modalBg').classList.remove('open');
+
+
+// ── ROLE / ACCESS MATRIX ─────────────────────────────────
+const ROLE_DEFS=[
+  {id:'superadmin',icon:'○',name:'Суперадмин',level:'Платформа',tone:'#E8E6FF',ink:'#2D2B75',desc:'Полный контроль над всем. Управляет пользователями, командами, ролями, настройками системы. Видит всё. Эта роль зафиксирована как страховка от самоблокировки.'},
+  {id:'admin',icon:'◈',name:'Администратор',level:'Платформа',tone:'#E3F1FF',ink:'#175A8F',desc:'Управляет командами и пользователями. Может создавать команды и назначать руководителей. Не меняет роль суперадмина.'},
+  {id:'teamLead',icon:'◆',name:'Руководитель команды',level:'Команда',tone:'#E0F2F1',ink:'#00695C',desc:'Управляет своей командой: добавляет участников, создаёт проекты, назначает менеджеров, видит проекты команды.'},
+  {id:'projectManager',icon:'◇',name:'Менеджер проекта',level:'Проект',tone:'#DDEEFF',ink:'#1565C0',desc:'Управляет конкретным проектом: создаёт фазы, задачи, назначает участников, меняет статусы, управляет доступом к проекту.'},
+  {id:'member',icon:'∘',name:'Участник',level:'Проект',tone:'#F4F7FB',ink:'#2E4459',desc:'Работает с задачами в проектах, куда добавлен. Обычно редактирует свои задачи и оставляет комментарии.'},
+  {id:'guest',icon:'△',name:'Гость',level:'Проект',tone:'#F4F7FB',ink:'#6B84A0',desc:'Видит только то, что явно разрешено на уровне проекта. По умолчанию — только чтение.'}
+];
+const ROLE_COLS=[
+  {id:'superadmin',label:'○ Супер'},
+  {id:'admin',label:'◈ Админ'},
+  {id:'teamLead',label:'◆ Рук.'},
+  {id:'projectManager',label:'◇ Менеджер'},
+  {id:'member',label:'∘ Участник'},
+  {id:'guest',label:'△ Гость'}
+];
+const PERMISSION_TABS=[['roles','Роли'],['platform','Платформа'],['team','Команда'],['project','Проект']];
+const PERMISSION_ACTIONS=[
+  {scope:'platform',group:'Пользователи',key:'platform.users.create',label:'Создать пользователя'},
+  {scope:'platform',group:'Пользователи',key:'platform.users.edit',label:'Редактировать профиль пользователя'},
+  {scope:'platform',group:'Пользователи',key:'platform.users.delete',label:'Удалить пользователя',limited:true},
+  {scope:'platform',group:'Пользователи',key:'platform.roles.assign',label:'Назначить роль платформы',limited:true},
+  {scope:'platform',group:'Пользователи',key:'platform.password.reset',label:'Сбросить / изменить пароль'},
+  {scope:'platform',group:'Команды',key:'platform.teams.create',label:'Создать команду'},
+  {scope:'platform',group:'Команды',key:'platform.teams.delete',label:'Удалить команду',limited:true},
+  {scope:'platform',group:'Команды',key:'platform.teams.assignLead',label:'Назначить руководителя команды'},
+  {scope:'platform',group:'Команды',key:'platform.teams.viewAll',label:'Видеть все команды платформы'},
+  {scope:'platform',group:'Система',key:'platform.settings.edit',label:'Изменить настройки платформы'},
+  {scope:'platform',group:'Система',key:'platform.audit.view',label:'Видеть аудит-лог'},
+  {scope:'platform',group:'Система',key:'platform.data.reset',label:'Сброс данных'},
+
+  {scope:'team',group:'Участники команды',key:'team.members.add',label:'Добавить участника в команду'},
+  {scope:'team',group:'Участники команды',key:'team.members.remove',label:'Удалить участника из команды'},
+  {scope:'team',group:'Участники команды',key:'team.members.role',label:'Изменить роль в команде'},
+  {scope:'team',group:'Участники команды',key:'team.members.view',label:'Видеть всех участников команды',limited:true},
+  {scope:'team',group:'Проекты команды',key:'team.project.create',label:'Создать проект в команде'},
+  {scope:'team',group:'Проекты команды',key:'team.project.delete',label:'Архивировать / удалить проект'},
+  {scope:'team',group:'Проекты команды',key:'team.project.viewAll',label:'Видеть список всех проектов',limited:true},
+  {scope:'team',group:'Проекты команды',key:'team.project.access.manage',label:'Управлять доступами к проектам'},
+  {scope:'team',group:'Настройки команды',key:'team.rename',label:'Переименовать команду'},
+
+  {scope:'project',group:'Структура проекта',key:'project.phase.manage',label:'Создать / удалить фазу'},
+  {scope:'project',group:'Структура проекта',key:'project.task.create',label:'Создать задачу / веху / риск'},
+  {scope:'project',group:'Структура проекта',key:'project.task.edit.any',label:'Редактировать любую задачу'},
+  {scope:'project',group:'Структура проекта',key:'project.task.edit.own',label:'Редактировать свои задачи',ownable:true},
+  {scope:'project',group:'Структура проекта',key:'project.task.delete',label:'Удалить задачу'},
+  {scope:'project',group:'Структура проекта',key:'project.task.status',label:'Менять статус задачи',ownable:true},
+  {scope:'project',group:'Структура проекта',key:'project.subtasks.add',label:'Добавлять подзадачи',ownable:true},
+  {scope:'project',group:'Структура проекта',key:'project.comments.add',label:'Оставлять комментарии'},
+  {scope:'project',group:'Просмотр',key:'project.view',label:'Видеть проект и все задачи'},
+  {scope:'project',group:'Просмотр',key:'project.comments.view',label:'Видеть комментарии'},
+  {scope:'project',group:'Просмотр',key:'project.export',label:'Экспортировать данные'},
+  {scope:'project',group:'Доступы',key:'project.members.add',label:'Добавить участника в проект'},
+  {scope:'project',group:'Доступы',key:'project.members.role',label:'Изменить роль в проекте'},
+  {scope:'project',group:'Доступы',key:'project.members.remove',label:'Удалить участника из проекта'}
+];
+const DEFAULT_ROLE_PERMISSIONS={
+  superadmin:{},admin:{},teamLead:{},projectManager:{},member:{},guest:{}
+};
+PERMISSION_ACTIONS.forEach(a=>{
+  DEFAULT_ROLE_PERMISSIONS.superadmin[a.key]='yes';
+  DEFAULT_ROLE_PERMISSIONS.admin[a.key]=a.scope==='platform'||a.scope==='team'||a.scope==='project'?'yes':'no';
+  DEFAULT_ROLE_PERMISSIONS.teamLead[a.key]=a.scope==='team'||a.scope==='project'?'yes':'no';
+  DEFAULT_ROLE_PERMISSIONS.projectManager[a.key]=a.scope==='project'?'yes':'no';
+  DEFAULT_ROLE_PERMISSIONS.member[a.key]=['project.task.create','project.task.edit.own','project.task.status','project.subtasks.add','project.comments.add','project.view','project.comments.view'].includes(a.key)?(a.ownable&&['project.task.status','project.subtasks.add'].includes(a.key)?'own':'yes'):'no';
+  DEFAULT_ROLE_PERMISSIONS.guest[a.key]=['project.view','project.comments.view'].includes(a.key)?'yes':'no';
+});
+['platform.users.delete','platform.roles.assign','platform.teams.delete'].forEach(k=>DEFAULT_ROLE_PERMISSIONS.admin[k]='partial');
+['team.members.view','team.project.viewAll'].forEach(k=>{DEFAULT_ROLE_PERMISSIONS.projectManager[k]='partial';DEFAULT_ROLE_PERMISSIONS.member[k]='partial';DEFAULT_ROLE_PERMISSIONS.guest[k]='partial'});
+DEFAULT_ROLE_PERMISSIONS.member['project.export']='no';
+DEFAULT_ROLE_PERMISSIONS.guest['project.comments.add']='no';
+
+let roleMatrixTab='roles';
+function clone(obj){return JSON.parse(JSON.stringify(obj))}
+function defaultRolePermissions(){return clone(DEFAULT_ROLE_PERMISSIONS)}
+function migrateDB(db){
+  db=db||structuredClone(SEED);
+  db.users=db.users||[];db.teams=db.teams||[];db.projects=db.projects||[];db.phases=db.phases||[];db.items=db.items||[];
+  let hasSuper=db.users.some(u=>u.platformRole==='superadmin');
+  db.users.forEach((u,i)=>{
+    if(!u.platformRole)u.platformRole='user';
+    if(!hasSuper&&i===0&&['admin','superadmin'].includes(u.platformRole)){u.platformRole='superadmin';hasSuper=true}
+    if(u.$password&&!u.password)u.password=u.$password;
+  });
+  db.projects.forEach(p=>{
+    p.access=p.access||[];
+    p.access=p.access.filter(a=>a&&a.userId);
+    p.access.forEach(a=>{
+      if(!a.role){a.role=a.level==='full'?'projectManager':a.level==='read'?'guest':'none'}
+      if(a.role==='projectManager')a.level='full';
+      else if(a.role==='member'||a.role==='guest')a.level='read';
+      else if(a.role==='none')a.level='none';
+      else if(!a.level)a.level='none';
+    });
+  });
+  db.rolePermissions=db.rolePermissions||defaultRolePermissions();
+  ROLE_COLS.forEach(r=>{db.rolePermissions[r.id]=Object.assign({},DEFAULT_ROLE_PERMISSIONS[r.id],db.rolePermissions[r.id]||{})});
+  return db;
+}
+
+function roleMeta(roleId){return ROLE_DEFS.find(r=>r.id===roleId)||ROLE_DEFS[5]}
+function platformRoleLabel(role){return role==='superadmin'?'Суперадмин':role==='admin'?'Администратор':'Пользователь'}
+function isSuperAdmin(user=CU){return user?.platformRole==='superadmin'}
+function isPlatformAdmin(user=CU){return ['superadmin','admin'].includes(user?.platformRole)}
+function teamRoleForUser(teamId,userId){
+  const t=DB.teams.find(x=>x.id===teamId);
+  const r=t?.members.find(m=>m.userId===userId)?.role;
+  return r==='lead'?'teamLead':r==='member'?'member':null;
+}
+function projectRoleForUser(projectId,userId){
+  const u=DB.users.find(x=>x.id===userId);if(!u)return null;
+  if(u.platformRole==='superadmin')return'superadmin';
+  if(u.platformRole==='admin')return'admin';
+  const p=DB.projects.find(x=>x.id===projectId);if(!p)return null;
+  const tr=teamRoleForUser(p.teamId,userId);
+  if(tr==='teamLead')return'teamLead';
+  const a=p.access?.find(x=>x.userId===userId);
+  if(!a||a.role==='none'||a.level==='none')return null;
+  if(a.role)return a.role;
+  if(a.level==='full')return'projectManager';
+  if(a.level==='read')return'guest';
+  return null;
+}
+
+function rolePerm(roleId,key){return DB?.rolePermissions?.[roleId]?.[key]??DEFAULT_ROLE_PERMISSIONS?.[roleId]?.[key]??'no'}
+function canOwn(item,userId=CU?.id){return !!item&&(item.ownerId===userId||item.people?.includes(userId))}
+function hasPermission(key,ctx={}){
+  if(!CU)return false;
+  let role=CU.platformRole==='superadmin'?'superadmin':CU.platformRole==='admin'?'admin':null;
+  if(ctx.projectId)role=projectRoleForUser(ctx.projectId,CU.id)||role;
+  else if(ctx.teamId)role=teamRoleForUser(ctx.teamId,CU.id)||role;
+  if(!role)return false;
+  const val=rolePerm(role,key);
+  if(val==='yes')return true;
+  if(val==='own')return canOwn(ctx.item,CU.id);
+  if(val==='partial'){
+    if(key==='team.project.viewAll')return ctx.projectId?projectAccess(ctx.projectId,CU.id)!=='none':isPlatformAdmin(CU);
+    if(key==='team.members.view')return !!teamRoleForUser(ctx.teamId,CU.id)||isPlatformAdmin(CU);
+    if(['platform.users.delete','platform.roles.assign'].includes(key)){
+      const target=ctx.user||DB.users.find(u=>u.id===ctx.userId);
+      return !!target && target.platformRole!=='superadmin' && target.id!==CU.id && !(target.platformRole==='admin'&&CU.platformRole==='admin');
+    }
+    if(key==='platform.teams.delete')return isSuperAdmin(CU)||CU.platformRole==='admin';
+    if(ctx.projectId)return projectAccess(ctx.projectId,CU.id)!=='none';
+    if(ctx.teamId)return !!teamRoleForUser(ctx.teamId,CU.id)||isPlatformAdmin(CU);
+    return true;
+  }
+  return false;
+}
+function projectRoleLabel(role){return role==='projectManager'?'Менеджер проекта':role==='member'?'Участник':role==='guest'?'Гость':role==='none'?'Нет доступа':'—'}
+function projectRoleToLevel(role){return role==='projectManager'?'full':role==='member'||role==='guest'?'read':'none'}
+function levelToProjectRole(level){return level==='full'?'projectManager':level==='read'?'guest':'none'}
+function syncAccessRecord(a){if(!a)return a;if(!a.role)a.role=levelToProjectRole(a.level);a.level=projectRoleToLevel(a.role);return a}
+function setProjectRole(projectId,userId,role){
+  const p=DB.projects.find(x=>x.id===projectId);if(!p)return;
+  p.access=p.access||[];
+  let a=p.access.find(x=>x.userId===userId);
+  if(!a){a={userId,role,level:projectRoleToLevel(role)};p.access.push(a)}
+  else{a.role=role;a.level=projectRoleToLevel(role)}
+  syncAccessRecord(a);
+}
+function deny(msg='Недостаточно прав'){toast(msg);return false}
+function canCreateProject(teamId){return hasPermission('team.project.create',{teamId})}
+function canManageProjectAccess(projectId){return hasPermission('project.members.role',{projectId})||hasPermission('team.project.access.manage',{teamId:DB.projects.find(p=>p.id===projectId)?.teamId,projectId})}
+function canManagePhases(projectId){return hasPermission('project.phase.manage',{projectId})}
+function canCreateItem(projectId){return hasPermission('project.task.create',{projectId})}
+function canEditItem(item){return !!item&&(hasPermission('project.task.edit.any',{projectId:item.projectId,item})||hasPermission('project.task.edit.own',{projectId:item.projectId,item}))}
+function canEditItemField(item,field){if(!item)return false;if(field==='status')return hasPermission('project.task.status',{projectId:item.projectId,item});return canEditItem(item)}
+function canAddSubtaskTo(item){return !!item&&hasPermission('project.subtasks.add',{projectId:item.projectId,item})}
+function canAddCommentTo(projectId){return hasPermission('project.comments.add',{projectId})}
+function canViewComments(projectId){return hasPermission('project.comments.view',{projectId})}
+function canOpenSettingsTab(tab){
+  if(tab==='profile')return true;
+  if(tab==='roles')return hasPermission('platform.settings.edit');
+  if(tab==='users')return hasPermission('platform.users.create')||hasPermission('platform.users.edit')||hasPermission('platform.users.delete');
+  if(tab==='teams')return hasPermission('platform.teams.viewAll')||myTeams().some(t=>hasPermission('team.members.view',{teamId:t.id})||hasPermission('team.project.viewAll',{teamId:t.id})||hasPermission('team.members.add',{teamId:t.id}));
+  return false;
+}
+function visibleSettingsTabs(){return [['profile','Мой профиль'],['teams','Команды'],['users','Пользователи'],['roles','Роли и доступы']].filter(([id])=>canOpenSettingsTab(id))}
+
+
+
+function setRoleMatrixTab(id){
+  roleMatrixTab=id;
+  if(document.startViewTransition){document.startViewTransition(()=>renderSettings($('mainContent')))}
+  else renderSettings($('mainContent'));
+}
+function setRolePermission(roleId,key,value){
+  if(roleId==='superadmin'){toast('Суперадмин зафиксирован системой');return}
+  DB.rolePermissions=DB.rolePermissions||defaultRolePermissions();
+  DB.rolePermissions[roleId]=DB.rolePermissions[roleId]||{};
+  DB.rolePermissions[roleId][key]=value;
+  saveDB();
+  toast('Права обновлены ✓');
+}
+function resetRolePermissions(){
+  if(!confirm('Сбросить матрицу прав к стандартной?'))return;
+  DB.rolePermissions=defaultRolePermissions();
+  saveDB();
+  renderSettings($('mainContent'));
+  toast('Матрица сброшена ✓');
+}
+function renderRoleMatrix(){
+  const content=roleMatrixTab==='roles'?renderRoleCards():renderPermissionEditor(roleMatrixTab);
+  return`<div class="perm-shell">
+    <div class="perm-head">
+      <div><div class="perm-title">Роли и доступы</div><div class="perm-sub">Это уже не справочная картинка, а настройка RBAC-матрицы: ставите галки по ролям, и разрешения автоматически используются функциями доступа. Гость видит проект только если явно добавлен на уровне проекта.</div></div>
+      <div class="perm-tabs">${PERMISSION_TABS.map(([id,l])=>`<button class="perm-tab ${roleMatrixTab===id?'active':''}" onclick="setRoleMatrixTab('${id}')">${l}</button>`).join('')}</div>
+    </div>
+    ${content}
+  </div>`;
+}
+function renderRoleCards(){
+  return`<div>
+    <div class="perm-toolbar"><span class="perm-hint">Роли применяются сверху вниз: платформа → команда → проект.</span><button class="btn sm" onclick="resetRolePermissions()">Сбросить матрицу</button></div>
+    <div class="perm-role-grid">${ROLE_DEFS.map(r=>`<div class="perm-role-card">
+      <span class="perm-role-chip" style="background:${r.tone};color:${r.ink};border-color:${r.tone}">${r.icon} ${esc(r.name)}</span>
+      <div class="perm-level">Уровень: ${esc(r.level)}</div>
+      <div class="perm-desc">${esc(r.desc)}</div>
+    </div>`).join('')}</div>
+  </div>`;
+}
+function renderPermissionEditor(scope){
+  const rows=PERMISSION_ACTIONS.filter(a=>a.scope===scope);
+  const grouped={};rows.forEach(a=>{(grouped[a.group]=grouped[a.group]||[]).push(a)});
+  return`<div>
+    <div class="perm-toolbar">
+      <span class="perm-auto">✓ Автосохранение включено</span>
+      <span class="perm-hint">Галка = разрешено. Для отдельных действий можно выбрать «все / свои / частично».</span>
+    </div>
+    <div class="perm-table-wrap"><table class="perm-table">
+      <thead><tr><th>Действие</th>${ROLE_COLS.map(c=>`<th>${esc(c.label)}</th>`).join('')}</tr></thead>
+      <tbody>${Object.entries(grouped).map(([group,actions])=>`<tr class="perm-section-row"><td colspan="7">${esc(group)}</td></tr>${actions.map(a=>`<tr><td>${esc(a.label)}<span class="perm-action-key">${esc(a.key)}</span></td>${ROLE_COLS.map(r=>`<td>${renderPermissionCell(r.id,a)}</td>`).join('')}</tr>`).join('')}`).join('')}</tbody>
+    </table></div>
+    <div class="perm-foot"><span class="perm-note"><i>✓</i>доступ есть</span><span class="perm-note"><i>свои</i>только назначенные задачи</span><span class="perm-note"><i>частично</i>только явно разрешённые объекты</span><span class="perm-note"><i>○</i>суперадмин заблокирован от отключения</span></div>
+  </div>`;
+}
+function renderPermissionCell(roleId,action){
+  const val=rolePerm(roleId,action.key);
+  const checked=val!=='no';
+  const disabled=roleId==='superadmin';
+  const checkVal=action.ownable?(checked?val:'own'):action.limited?(checked?val:'partial'):'yes';
+  const cb=`<input class="perm-check" type="checkbox" ${checked?'checked':''} ${disabled?'disabled':''} onchange="setRolePermission('${roleId}','${action.key}',this.checked?'${checkVal}':'no');renderSettings($('mainContent'))">`;
+  const sel=(checked&&!disabled&&(action.ownable||action.limited))?`<select class="perm-scope" onchange="setRolePermission('${roleId}','${action.key}',this.value);renderSettings($('mainContent'))">
+      ${action.ownable?`<option value="yes" ${val==='yes'?'selected':''}>все</option><option value="own" ${val==='own'?'selected':''}>свои</option>`:''}
+      ${action.limited?`<option value="yes" ${val==='yes'?'selected':''}>все</option><option value="partial" ${val==='partial'?'selected':''}>частично</option>`:''}
+    </select>`:'';
+  return`<div class="perm-cell">${cb}${disabled?'<span class="perm-lock">lock</span>':sel}</div>`;
+}
+
+// ── DATA STRUCTURE ────────────────────────────────────────
+// Roles:
+//   platform: admin | user
+//   team: lead | member
+//   project access: full | read | none
+const STORE='rs_v2';
+const SEED={
+  users:[
+    {id:'u1',name:'Алёна Смирнова',initials:'АС',color:'linear-gradient(135deg,#1565C0,#0288D1)',platformRole:'superadmin'},
+    {id:'u2',name:'Мария Соколова',initials:'МС',color:'linear-gradient(135deg,#00897B,#26A69A)',platformRole:'user'},
+    {id:'u3',name:'Иван Петров',initials:'ИП',color:'linear-gradient(135deg,#7B1FA2,#AB47BC)',platformRole:'user'},
+    {id:'u4',name:'Андрей Ким',initials:'АК',color:'linear-gradient(135deg,#E65100,#FF8A65)',platformRole:'user'},
+    {id:'u5',name:'Светлана Рай',initials:'СР',color:'linear-gradient(135deg,#1565C0,#42A5F5)',platformRole:'user'},
+  ],
+  teams:[
+    {id:'t1',name:'Digital Products',color:'linear-gradient(135deg,#1565C0,#29B6F6)',
+     members:[
+       {userId:'u2',role:'lead'},
+       {userId:'u3',role:'member'},
+       {userId:'u4',role:'member'},
+     ]},
+    {id:'t2',name:'BI & Analytics',color:'linear-gradient(135deg,#7B1FA2,#AB47BC)',
+     members:[
+       {userId:'u3',role:'lead'},
+       {userId:'u5',role:'member'},
+     ]},
+  ],
+  projects:[
+    {id:'p1',teamId:'t1',title:'Запуск цифрового канала МФО',desc:'Стратегия, интеграции и MVP.',status:'progress',horizon:'Q2 2024',start:'2024-05-16',due:'2024-07-31',ownerId:'u2',
+     access:[{userId:'u2',level:'full'},{userId:'u3',level:'full'},{userId:'u4',level:'read'},{userId:'u1',level:'full'}]},
+    {id:'p2',teamId:'t1',title:'Telegram Bot → Bitrix24',desc:'Автоматизация заявок.',status:'progress',horizon:'Q2 2026',start:'2026-04-15',due:'2026-06-01',ownerId:'u2',
+     access:[{userId:'u2',level:'full'},{userId:'u4',level:'full'},{userId:'u1',level:'full'}]},
+    {id:'p3',teamId:'t2',title:'Power BI Platform',desc:'RLS, витрины, дашборды.',status:'new',horizon:'Q3 2026',start:'2026-05-01',due:'2026-08-01',ownerId:'u3',
+     access:[{userId:'u3',level:'full'},{userId:'u5',level:'read'},{userId:'u1',level:'full'}]},
+  ],
+  phases:[
+    {id:'ph1',projectId:'p1',title:'Стратегия и анализ',sort:1},
+    {id:'ph2',projectId:'p1',title:'Проектирование',sort:2},
+    {id:'ph3',projectId:'p1',title:'Интеграция и приёмка',sort:3},
+    {id:'ph4',projectId:'p2',title:'Диагностика данных',sort:1},
+    {id:'ph5',projectId:'p3',title:'Архитектура',sort:1},
+  ],
+  items:[
+    {id:'i1',projectId:'p1',phaseId:'ph1',type:'task',title:'Определить продукт и программу страхования',result:'Согласованные программы и условия',desc:'',status:'progress',ownerId:'u2',people:['u3','u4'],start:'2024-05-16',due:'2024-05-22',smart:['Продукт описан','Параметры утверждены','Есть владельцы','Нужно для запуска','До 22.05.2024'],subtasks:[{id:'s1',title:'Собрать параметры продукта',due:'2024-05-18',done:true},{id:'s2',title:'Согласовать исключения',due:'2024-05-21',done:false}],comments:[{userId:'u2',text:'Проверить тарифную сетку.',date:'2024-05-16'}]},
+    {id:'i2',projectId:'p1',phaseId:'ph1',type:'task',title:'Финансовая модель канала',result:'Модель на 18 месяцев',desc:'',status:'new',ownerId:'u3',people:[],start:'2024-05-23',due:'2024-05-25',smart:['','','','',''],subtasks:[],comments:[]},
+    {id:'i3',projectId:'p1',phaseId:'ph2',type:'task',title:'Процесс продаж и страхования',result:'Карта процесса',desc:'',status:'progress',ownerId:'u4',people:['u3'],start:'2024-05-26',due:'2024-05-31',smart:['','','','',''],subtasks:[],comments:[]},
+    {id:'i4',projectId:'p1',phaseId:'ph2',type:'risk',title:'Риск задержки согласования ИТ',result:'План обхода',desc:'',status:'risk',ownerId:'u2',people:[],start:'2024-06-01',due:'2024-06-05',smart:['','','','',''],subtasks:[],comments:[]},
+    {id:'i5',projectId:'p1',phaseId:'ph3',type:'milestone',title:'Приёмка MVP',result:'Протоколы и акты',desc:'',status:'done',ownerId:'u2',people:['u3','u4'],start:'2024-06-21',due:'2024-06-30',smart:['','','','',''],subtasks:[],comments:[]},
+    {id:'i6',projectId:'p2',phaseId:'ph4',type:'task',title:'Передача chat_id из Telegram',result:'Стабильный chat_id',desc:'',status:'progress',ownerId:'u2',people:['u4'],start:'2026-04-15',due:'2026-04-22',smart:['','','','',''],subtasks:[],comments:[]},
+    {id:'i7',projectId:'p3',phaseId:'ph5',type:'task',title:'Карта источников данных',result:'Реестр источников',desc:'',status:'new',ownerId:'u3',people:['u5'],start:'2026-05-01',due:'2026-05-10',smart:['','','','',''],subtasks:[],comments:[]},
+  ]
+};
+
+let DB, CU; // current DB, current user
+let VS={view:'home',teamId:null,projectId:null,itemId:null,phaseId:null,phaseView:'selected',tab:'table',taskSearch:''};
+
+function loadDB(){try{return migrateDB(JSON.parse(localStorage.getItem(STORE))||structuredClone(SEED))}catch{return migrateDB(structuredClone(SEED))}}
+function saveDB(){localStorage.setItem(STORE,JSON.stringify(DB))}
+
+// ── ACCESS HELPERS ────────────────────────────────────────
+function projectAccess(projectId,userId){
+  const p=DB.projects.find(x=>x.id===projectId);
+  const u=DB.users.find(x=>x.id===userId)||CU;
+  if(!p||!u)return'none';
+  if(isPlatformAdmin(u))return'full';
+  if(teamRoleForUser(p.teamId,userId)==='teamLead')return'full';
+  const a=p.access?.find(x=>x.userId===userId);
+  if(!a||a.role==='none'||a.level==='none')return'none';
+  if(a.role==='projectManager'||a.level==='full')return'full';
+  if(['member','guest'].includes(a.role)||a.level==='read')return'read';
+  return 'none';
+}
+
+function canEdit(projectId){return hasPermission('project.task.edit.any',{projectId})||hasPermission('project.phase.manage',{projectId})||hasPermission('project.members.role',{projectId})}
+
+function visibleProjects(teamId){return DB.projects.filter(p=>p.teamId===teamId&&(hasPermission('team.project.viewAll',{teamId,projectId:p.id})||hasPermission('project.view',{projectId:p.id})||projectAccess(p.id,CU?.id)!=='none'))}
+
+function myTeams(){
+  if(isPlatformAdmin(CU))return DB.teams;
+  return DB.teams.filter(t=>t.members.some(m=>m.userId===CU?.id));
+}
+function teamRole(teamId){
+  if(CU?.platformRole==='superadmin')return'superadmin';
+  if(CU?.platformRole==='admin')return'admin';
+  const r=teamRoleForUser(teamId,CU?.id);
+  return r==='teamLead'?'lead':r==='member'?'member':null;
+}
+function U(id){return DB.users.find(u=>u.id===id)||{name:'—',initials:'?',color:'#999'}}
+
+// ── LOGIN ─────────────────────────────────────────────────
+let selectedUID=null;
+function initLogin(){
+  DB=loadDB();
+  const roleTag={admin:'tag-admin',lead:'tag-lead',member:'tag-member',viewer:'tag-viewer'};
+  const roleLabel={admin:'Администратор',lead:'Руководитель',member:'Участник',viewer:'Наблюдатель'};
+  $('userList').innerHTML=DB.users.map(u=>`
+    <button class="user-btn" id="ub-${u.id}" onclick="selectUser('${u.id}')">
+      <div class="user-av" style="background:${u.color}">${esc(u.initials)}</div>
+      <div>
+        <div class="user-name">${esc(u.name)}</div>
+        <div class="small muted">${isPlatformAdmin(u)?'Платформа':'Пользователь'}</div>
+      </div>
+      <span class="user-role-tag ${isPlatformAdmin(u)?'tag-admin':'tag-member'}">${platformRoleLabel(u.platformRole)}</span>
+    </button>`).join('');
+}
+function selectUser(id){
+  selectedUID=id;
+  document.querySelectorAll('.user-btn').forEach(b=>b.classList.remove('sel'));
+  $('ub-'+id)?.classList.add('sel');
+  $('loginBtn').disabled=false;
+}
+function doLogin(){
+  if(!selectedUID)return;
+  CU=DB.users.find(u=>u.id===selectedUID);
+  $('loginScreen').style.display='none';
+  $('appShell').classList.remove('hidden');
+  $('topAv').style.background=CU.color;
+  $('topAv').textContent=CU.initials;
+  $('topName').textContent=CU.name;
+  VS={view:'home',teamId:null,projectId:null,itemId:null,phaseId:null,phaseView:'selected',tab:'table',taskSearch:''};
+  const teams=myTeams();
+  if(teams.length>=1){VS.teamId=teams[0].id;VS.view='team'}
+  else if(isPlatformAdmin(CU)){VS.view='admin'}
+  render();
+}
+
+// ── DROPDOWN UTILS ────────────────────────────────────────
+function toggleDropdown(id){
+  const el=document.getElementById(id);
+  const wasOpen=el.classList.contains('open');
+  closeDropdowns();
+  if(!wasOpen)el.classList.add('open');
+}
+function closeDropdowns(){document.querySelectorAll('.dropdown').forEach(d=>d.classList.remove('open'))}
+document.addEventListener('click',e=>{if(!e.target.closest('.dropdown')&&!e.target.closest('[onclick*="toggleDropdown"]'))closeDropdowns()});
+
+// ── RENDER LOOP ───────────────────────────────────────────
+function render(){
+  renderTopbar();
+  renderMain();
+}
+
+// ── TOPBAR ────────────────────────────────────────────────
+function renderTopbar(){
+  const teams=myTeams();
+
+  // main nav active state
+  document.getElementById('mnav-projects')?.classList.toggle('active',['team','home','project'].includes(VS.view));
+  document.getElementById('mnav-overview')?.classList.toggle('active',VS.view==='overview');
+  document.getElementById('mnav-people')?.classList.toggle('active',VS.view==='people');
+  document.getElementById('mnav-mytasks')?.classList.toggle('active',VS.view==='mytasks');
+  document.getElementById('mnav-settings')?.classList.toggle('active',['settings','admin'].includes(VS.view));
+
+  // project context bar (row 2)
+  const ctxBar=document.getElementById('ctxBar');
+  const ctxTitle=document.getElementById('ctxTitle');
+  const ctxTabs=document.getElementById('ctxTabs');
+  const ctxRight=document.getElementById('ctxRight');
+  if(VS.view==='project'){
+    const p=DB.projects.find(x=>x.id===VS.projectId);
+    if(ctxBar)ctxBar.classList.add('show');
+    if(ctxTitle)ctxTitle.textContent=p?.title||'';
+    if(ctxTabs){
+      const tabs=[['table','Таблица'],['kanban','Канбан'],['gantt','Гант'],['roadmap','Roadmap'],['calendar','Календарь'],['analytics','Аналитика']];
+      ctxTabs.innerHTML=tabs.map(([id,l])=>`<button class="vtab ${VS.tab===id?'active':''}" data-tab="${id}" onclick="setTab('${id}')">${l}</button>`).join('');
+    }
+    if(ctxRight){
+      const canPhase=canManagePhases(VS.projectId);
+      const canTask=canCreateItem(VS.projectId);
+      ctxRight.innerHTML=`<input class="topbar-search" placeholder="Поиск..." value="${esc(VS.taskSearch)}" oninput="VS.taskSearch=this.value;renderDetailMain()">${canPhase?`<button class="btn sm" onclick="openPhaseModal()">+ Фаза</button>`:''}${canTask?`<button class="btn sm primary" onclick="openItemModal('task')">+ Задача</button>`:''}`;
+    }
+  } else {
+    if(ctxBar)ctxBar.classList.remove('show');
+  }
+}
+
+// ── MAIN CONTENT ──────────────────────────────────────────
+function renderMain(){
+  const el=$('mainContent');
+  if(VS.view==='admin')renderAdmin(el);
+  else if(VS.view==='team'||VS.view==='home')renderTeam(el);
+  else if(VS.view==='project')renderProject(el);
+  else if(VS.view==='mytasks')renderMyTasks(el);
+  else if(VS.view==='settings')renderSettings(el);
+  else if(VS.view==='overview')renderOverview(el);
+  else if(VS.view==='people')renderPeopleView(el);
+  else renderTeam(el);
+}
+
+function renderOverview(el){
+  // global kanban across all visible projects
+  const sts=[['new','Не начато'],['progress','В работе'],['approval','Согласование'],['risk','Риски'],['done','Готово']];
+  const allProj=myTeams().flatMap(t=>visibleProjects(t.id));
+  const allItems=DB.items.filter(i=>allProj.some(p=>p.id===i.projectId));
+  const phaseById=Object.fromEntries(DB.phases.map(p=>[p.id,p.title]));
+  const projById=Object.fromEntries(DB.projects.map(p=>[p.id,p]));
+  const total=allItems.length||1,done=allItems.filter(i=>i.status==='done').length;
+  el.innerHTML=`<div class="page-scroll">
+    <div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:4px">Общий обзор</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px">${allProj.length} проектов · ${allItems.length} задач · ${Math.round(done/total*100)}% выполнено</div>
+    <div style="display:grid;grid-template-columns:repeat(5,minmax(190px,1fr));gap:10px">
+      ${sts.map(([s,l])=>{
+        const arr=allItems.filter(i=>i.status===s);
+        const byP={};arr.forEach(i=>{if(!byP[i.projectId])byP[i.projectId]=[];byP[i.projectId].push(i)});
+        return`<div class="card" style="padding:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:7px;border-bottom:2px solid var(--line)">
+            <span style="font-size:12px;font-weight:900;color:var(--ink)">${l}</span>
+            <span style="font-size:10px;font-weight:800;color:var(--muted);background:var(--paper-soft);border:1px solid var(--line);border-radius:999px;padding:1px 7px">${arr.length}</span>
+          </div>
+          ${arr.length===0?`<div style="font-size:11px;color:var(--soft);text-align:center;padding:12px 0;font-style:italic">Нет задач</div>`:''}
+          ${Object.entries(byP).map(([pid,items])=>{
+            const p=projById[pid];if(!p)return'';
+            return`<div style="margin-bottom:10px">
+              <div style="font-size:9px;font-weight:900;color:var(--blue);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;padding:2px 5px;background:rgba(21,101,192,.07);border-radius:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.title)}</div>
+              ${items.map(i=>`<div style="background:var(--paper-soft);border:1px solid var(--line);border-radius:8px;padding:7px;margin-bottom:4px;cursor:pointer" onclick="openProject('${p.id}');VS.itemId='${i.id}';VS.tab='table';renderDetailMain()">
+                <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:3px">${esc(i.title)}</div>
+                ${phaseById[i.phaseId]?`<span style="font-size:9px;font-weight:800;background:#E1F5FE;color:#0277BD;border-radius:4px;padding:1px 5px">${esc(phaseById[i.phaseId])}</span>`:''}
+              </div>`).join('')}
+            </div>`;
+          }).join('')}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function renderPeopleView(el){
+  const teams=myTeams();
+  el.innerHTML=`<div class="page-scroll">
+    <div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:16px">Люди</div>
+    ${teams.map(t=>`<div style="margin-bottom:20px">
+      <div style="font-size:12px;font-weight:800;color:var(--ink);margin-bottom:10px">${esc(t.name)}</div>
+      <div class="data-table">
+        <div class="dt-head" style="grid-template-columns:1.5fr 1fr 90px""><div>Участник</div><div>Проектов</div><div>Роль</div></div>
+        ${t.members.map(m=>{
+          const u=U(m.userId);
+          const cnt=DB.projects.filter(p=>p.teamId===t.id&&projectAccess(p.id,m.userId)!=='none').length;
+          return`<div class="dt-row" style="grid-template-columns:1.5fr 1fr 90px">
+            <div class="flex gap8"><div class="dt-av" style="background:${u.color}">${esc(u.initials)}</div><div><div class="dt-name">${esc(u.name)}</div><div class="dt-sub">${esc(u.email||'')}</div></div></div>
+            <div class="small muted">${cnt} проектов</div>
+            <div><span class="user-role-tag ${m.role==='lead'?'tag-lead':'tag-member'}">${m.role==='lead'?'Руководитель':'Участник'}</span></div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`).join('')}
+  </div>`;
+}
+
+function renderHome(el){
+  const teams=myTeams();
+  if(!teams.length){el.innerHTML=`<div class="empty"><div class="empty-ico">👋</div><div class="empty-t">Добро пожаловать!</div><div class="empty-s">Вас пока не добавили ни в одну команду. Попросите администратора.</div></div>`;return}
+  el.innerHTML=`<div class="page-scroll"><div class="admin-title" style="margin-bottom:16px;font-family:'Forum',serif;font-size:22px;color:var(--ink)">Добро пожаловать, ${esc(CU.name.split(' ')[0])}</div>
+  ${teams.map(t=>{
+    const projs=visibleProjects(t.id);
+    return`<div style="margin-bottom:20px"><div class="flex gap8" style="margin-bottom:10px"><div style="width:12px;height:12px;border-radius:3px;background:${t.color};flex-shrink:0"></div><span style="font-size:13px;font-weight:800;color:var(--ink)">${esc(t.name)}</span></div>
+    <div class="proj-grid">${projs.map(p=>projCardHtml(p)).join('')}${canCreate(t.id)?`<div class="proj-card" style="border-style:dashed;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:120px;opacity:.5" onclick="openProjectModal('${t.id}')"><span style="font-size:13px;font-weight:800;color:var(--muted)">+ Новый проект</span></div>`:''}
+    </div></div>`;
+  }).join('')}</div>`;
+}
+function canCreate(teamId){return canCreateProject(teamId)}
+
+// ── ADMIN PANEL ───────────────────────────────────────────
+function gotoHome(){
+  // click on logo — go to team view if team selected, else first team
+  const teams=myTeams();
+  if(VS.teamId){VS.view='team';VS.projectId=null}
+  else if(teams.length){VS.teamId=teams[0].id;VS.view='team';VS.projectId=null}
+  else VS.view='home';
+  render();
+}
+function gotoTeamView(){VS.view=VS.teamId?'team':'home';VS.projectId=null;render()}
+function gotoOverview(){VS.view='overview';render()}
+function gotoPeople(){VS.view='people';render()}
+function gotoAdmin(){settingsTab='teams';gotoSettings()}
+let adminTab='teams';
+function renderAdmin(el){
+  el.innerHTML=`<div class="page-scroll">
+    <div class="flex gap12" style="margin-bottom:16px">
+      <div><div class="admin-title">Администрирование</div><div class="admin-desc" style="font-size:12px;color:var(--muted);margin-top:2px">Команды, участники и доступы к проектам</div></div>
+      <div style="margin-left:auto;display:flex;gap:7px">
+        ${['teams','users','access'].map(t=>`<button class="btn ${adminTab===t?'primary':''}" onclick="adminTab='${t}';renderAdmin($('mainContent'))">${{teams:'Команды',users:'Пользователи',access:'Доступы'}[t]}</button>`).join('')}
+      </div>
+    </div>
+    ${adminTab==='teams'?renderAdminTeams():adminTab==='users'?renderAdminUsers():renderAdminAccess()}
+  </div>`;
+}
+
+function renderAdminTeams(){
+  return`<div style="display:flex;flex-direction:column;gap:14px">
+    <div class="flex" style="justify-content:flex-end"><button class="btn primary" onclick="openTeamModal()">+ Создать команду</button></div>
+    ${DB.teams.map(t=>{
+      const leads=t.members.filter(m=>m.role==='lead').map(m=>U(m.userId).name).join(', ')||'—';
+      return`<div class="card">
+        <div class="flex gap12" style="margin-bottom:12px">
+          <div style="width:36px;height:36px;border-radius:11px;background:${t.color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:13px;flex-shrink:0">${t.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+          <div class="f1">
+            <div style="font-size:14px;font-weight:800;color:var(--ink)">${esc(t.name)}</div>
+            <div class="small muted">Руководитель: ${esc(leads)}</div>
+          </div>
+          <button class="btn sm" onclick="openTeamModal('${t.id}')">Изменить</button>
+          <button class="btn sm danger" onclick="deleteTeam('${t.id}')">Удалить</button>
+        </div>
+        <div class="data-table">
+          <div class="dt-head" style="grid-template-columns:1fr 100px 80px"><div>Участник</div><div>Роль в команде</div><div></div></div>
+          ${t.members.map(m=>{const u=U(m.userId);return`<div class="dt-row" style="grid-template-columns:1fr 100px 80px">
+            <div class="flex gap8"><div class="dt-av" style="background:${u.color}">${esc(u.initials)}</div><div><div class="dt-name">${esc(u.name)}</div></div></div>
+            <div><select class="access-sel" onchange="changeTeamRole('${t.id}','${m.userId}',this.value)"><option value="lead" ${m.role==='lead'?'selected':''}>Руководитель</option><option value="member" ${m.role==='member'?'selected':''}>Участник</option></select></div>
+            <div><button class="btn sm danger" onclick="removeMember('${t.id}','${m.userId}')">Удалить</button></div>
+          </div>`}).join('')}
+        </div>
+        <div class="flex gap8" style="margin-top:10px">
+          <button class="btn sm" onclick="openAddMemberModal('${t.id}')">+ Участник</button>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderAdminUsers(){
+  return`<div style="display:flex;flex-direction:column;gap:10px">
+    <div class="flex" style="justify-content:flex-end"><button class="btn primary" onclick="openUserModal()">+ Пользователь</button></div>
+    <div class="data-table">
+      <div class="dt-head" style="grid-template-columns:1.5fr 1fr 120px 100px"><div>Пользователь</div><div>Команды</div><div>Роль платформы</div><div></div></div>
+      ${DB.users.map(u=>{
+        const uTeams=DB.teams.filter(t=>t.members.some(m=>m.userId===u.id)).map(t=>t.name).join(', ')||'—';
+        return`<div class="dt-row" style="grid-template-columns:1.5fr 1fr 120px 100px">
+          <div class="flex gap8"><div class="dt-av" style="background:${u.color}">${esc(u.initials)}</div><div><div class="dt-name">${esc(u.name)}</div></div></div>
+          <div class="small muted">${esc(uTeams)}</div>
+          <div><select class="access-sel" onchange="changePlatformRole('${u.id}',this.value)"><option value="superadmin" ${u.platformRole==='superadmin'?'selected':''}>Суперадмин</option><option value="admin" ${u.platformRole==='admin'?'selected':''}>Администратор</option><option value="user" ${u.platformRole==='user'?'selected':''}>Пользователь</option></select></div>
+          <div class="flex gap4">${u.id!==CU.id?`<button class="btn sm danger" onclick="deleteUser('${u.id}')">Удалить</button>`:''}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function renderAdminAccess(){
+  const teams=myTeams().filter(t=>isPlatformAdmin(CU)||hasPermission('team.project.access.manage',{teamId:t.id})||hasPermission('team.members.view',{teamId:t.id})||hasPermission('team.project.viewAll',{teamId:t.id}));
+  return`<div style="display:flex;flex-direction:column;gap:16px">
+    <div class="small muted">Роль проекта задаётся явно: Менеджер проекта / Участник / Гость / Нет доступа. Эти роли берут права из матрицы «Роли и доступы».</div>
+    ${teams.map(t=>{const projs=DB.projects.filter(p=>p.teamId===t.id&&visibleProjects(t.id).some(v=>v.id===p.id));if(!projs.length)return'';const allUserIds=[...new Set([...t.members.map(m=>m.userId),...projs.flatMap(p=>(p.access||[]).map(a=>a.userId))])];return`<div class="card"><div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:12px">${esc(t.name)}</div>${projs.map(proj=>{const canManage=canManageProjectAccess(proj.id);return`<div style="margin-bottom:14px"><div class="flex gap8" style="margin-bottom:8px"><span style="font-size:12px;font-weight:700;color:var(--ink)">${esc(proj.title)}</span><span class="badge ${proj.status}" style="margin-left:auto">${{new:'Не начато',progress:'В работе',done:'Готово',risk:'Риски'}[proj.status]||proj.status}</span></div><div class="matrix-wrap"><table class="matrix"><thead><tr><th>Участник</th><th>Роль в команде</th><th>Роль в проекте</th></tr></thead><tbody>${allUserIds.map(uid=>{const u=U(uid);const tr=t.members.find(m=>m.userId===uid)?.role||'—';const a=proj.access?.find(x=>x.userId===uid);const role=a?.role||levelToProjectRole(a?.level)||'none';return`<tr><td><div class="matrix-user"><div class="dt-av" style="background:${u.color};width:24px;height:24px;font-size:8px">${esc(u.initials)}</div>${esc(u.name)}</div></td><td><span class="user-role-tag ${tr==='lead'?'tag-lead':'tag-member'}" style="font-size:10px">${tr==='lead'?'Руководитель':tr==='member'?'Участник':'—'}</span></td><td><select class="access-sel ${projectRoleToLevel(role)}" onchange="setProjectAccess('${proj.id}','${uid}',this.value,this)" ${canManage?'':'disabled'}><option value="projectManager" ${role==='projectManager'?'selected':''}>◇ Менеджер проекта</option><option value="member" ${role==='member'?'selected':''}>∘ Участник</option><option value="guest" ${role==='guest'?'selected':''}>△ Гость</option><option value="none" ${role==='none'?'selected':''}>🚫 Нет доступа</option></select></td></tr>`}).join('')}</tbody></table></div></div>`}).join('')}</div>`}).join('')}
+  </div>`;
+}
+
+
+function setProjectAccess(projectId,userId,role,el){if(!canManageProjectAccess(projectId))return deny('Нет права управлять доступами проекта');setProjectRole(projectId,userId,role);if(el)el.className=`access-sel ${projectRoleToLevel(role)}`;saveDB();toast('Доступ обновлён ✓')}
+
+
+// ── TEAM VIEW ─────────────────────────────────────────────
+function gotoTeam(id){VS.view='team';VS.teamId=id;VS.projectId=null;render()}
+function renderTeam(el){
+  // "Карты проектов" — все команды и все их проекты с фильтрами
+  const teams=myTeams();
+  const sf=VS.statusFilter||'all';
+  const rf=VS.roleFilter||'all';
+  const q=(VS.projSearch||'').toLowerCase().trim();
+
+  const slbl={new:'Не начато',progress:'В работе',done:'Готово',risk:'Риски'};
+
+  // collect all visible projects across all teams
+  const allTeamProjects=teams.map(t=>({
+    team:t,
+    projects:visibleProjects(t.id).filter(p=>{
+      if(sf!=='all'&&p.status!==sf)return false;
+      if(rf!=='all'){
+        if(rf==='lead'&&teamRole(t.id)!=='lead'&&!isPlatformAdmin(CU))return false;
+        if(rf==='member'&&teamRole(t.id)!=='member')return false;
+      }
+      if(q&&![p.title,p.desc].join(' ').toLowerCase().includes(q))return false;
+      return true;
+    })
+  })).filter(x=>x.projects.length>0||q===''&&sf==='all'&&rf==='all');
+
+  el.innerHTML=`<div style="display:flex;flex-direction:column;height:100%;overflow:hidden">
+    <div style="padding:14px 20px 10px;flex-shrink:0;border-bottom:1px solid var(--line-soft);background:var(--paper-soft)">
+      <div class="flex gap8">
+        <label class="flex gap6" style="background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:0 10px;height:32px;gap:7px;box-shadow:var(--shadow-sm)">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="none" style="color:var(--soft);flex-shrink:0;margin-top:1px"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l2.5 2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <input style="border:0;outline:0;background:transparent;width:180px;font-size:12px;color:var(--ink)" placeholder="Поиск проектов..." value="${esc(VS.projSearch||'')}" oninput="VS.projSearch=this.value;renderTeam($('mainContent'))">
+        </label>
+        <div class="flex gap4" style="margin-left:8px">
+          <span style="font-size:10px;font-weight:900;color:var(--soft);text-transform:uppercase;letter-spacing:.1em;align-self:center;margin-right:4px">Статус</span>
+          ${[['all','Все'],['progress','В работе'],['new','Не начато'],['done','Готово'],['risk','Риски']].map(([v,l])=>`<button style="height:28px;padding:0 10px;border-radius:999px;border:1px solid ${sf===v?'transparent':'var(--line)'};background:${sf===v?'linear-gradient(135deg,#1565C0,#1976D2)':'var(--paper)'};color:${sf===v?'#fff':'var(--muted)'};font-size:11px;font-weight:800;cursor:pointer;transition:.12s" onclick="VS.statusFilter='${v}';renderTeam($('mainContent'))">${l}</button>`).join('')}
+        </div>
+        <div class="flex gap4" style="margin-left:8px">
+          <span style="font-size:10px;font-weight:900;color:var(--soft);text-transform:uppercase;letter-spacing:.1em;align-self:center;margin-right:4px">Моя роль</span>
+          ${[['all','Все'],['lead','Руководитель'],['member','Участник']].map(([v,l])=>`<button style="height:28px;padding:0 10px;border-radius:999px;border:1px solid ${rf===v?'transparent':'var(--line)'};background:${rf===v?'linear-gradient(135deg,#1565C0,#1976D2)':'var(--paper)'};color:${rf===v?'#fff':'var(--muted)'};font-size:11px;font-weight:800;cursor:pointer;transition:.12s" onclick="VS.roleFilter='${v}';renderTeam($('mainContent'))">${l}</button>`).join('')}
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:16px 20px 24px">
+      ${allTeamProjects.map(({team:t,projects:projs})=>`
+        <div style="margin-bottom:24px">
+          <div class="flex gap8" style="margin-bottom:12px">
+            <div style="width:28px;height:28px;border-radius:9px;background:${t.color};display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:900;flex-shrink:0">${t.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+            <span style="font-size:13px;font-weight:800;color:var(--ink)">${esc(t.name)}</span>
+            <span style="font-size:11px;color:var(--muted)">${projs.length} проектов</span>
+            <span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;background:${teamRole(t.id)==='lead'?'#E0F2F1':'var(--paper-deep)'};color:${teamRole(t.id)==='lead'?'#00695C':'var(--muted)'};border:1px solid ${teamRole(t.id)==='lead'?'rgba(0,105,92,.16)':'var(--line)'}">${isPlatformAdmin(CU)?'Адм':teamRole(t.id)==='lead'?'Руководитель':'Участник'}</span>
+          </div>
+          <div class="proj-grid">
+            ${projs.map(p=>projCardHtml(p)).join('')}
+            ${canCreate(t.id)&&sf==='all'&&rf==='all'&&!q?`<div class="proj-card" style="border-style:dashed;cursor:pointer;display:flex;align-items:center;justify-content:center;min-height:120px;opacity:.45" onclick="openProjectModal('${t.id}')"><span style="font-size:12px;font-weight:800;color:var(--muted)">+ Новый проект</span></div>`:''}
+          </div>
+        </div>`).join('')}
+      ${allTeamProjects.length===0?`<div class="empty"><div class="empty-ico">🔍</div><div class="empty-t">Ничего не найдено</div><div class="empty-s">Попробуйте изменить фильтры</div></div>`:''}
+    </div>
+  </div>`;
+}
+
+function projCardHtml(p){
+  const items=DB.items.filter(i=>i.projectId===p.id);
+  const pct=items.length?Math.round(items.filter(i=>i.status==='done').length/items.length*100):0;
+  const uIds=[...new Set(items.flatMap(i=>[i.ownerId,...(i.people||[])]).filter(Boolean))].slice(0,4);
+  const slbl={new:'Не начато',progress:'В работе',done:'Готово',risk:'Риски'};
+  const acc=projectAccess(p.id,CU.id);
+  return`<div class="proj-card" onclick="openProject('${p.id}')">
+    <div class="flex gap8" style="margin-bottom:4px"><span class="badge ${p.status}">${slbl[p.status]||p.status}</span>${acc==='read'?`<span class="small muted">только чтение</span>`:''}<span class="small muted" style="margin-left:auto">${esc(p.horizon)}</span></div>
+    <div class="proj-title">${esc(p.title)}</div>
+    <div class="proj-desc">${esc(p.desc)}</div>
+    <div class="proj-footer">
+      <div class="flex">${uIds.map(id=>{const u=U(id);return`<div class="pav" title="${esc(u.name)}" style="background:${u.color}">${esc(u.initials)}</div>`}).join('')}</div>
+      <span class="small muted">${items.length} задач · ${pct}%</span>
+    </div>
+    <div class="pbar"><span style="width:${pct}%"></span></div>
+  </div>`;
+}
+
+// ── PROJECT DETAIL ────────────────────────────────────────
+function openProject(id){
+  VS.view='project';VS.projectId=id;VS.tab='table';VS.taskSearch='';
+  const phs=DB.phases.filter(p=>p.projectId===id).sort((a,b)=>a.sort-b.sort);
+  VS.phaseId=phs[0]?.id||null;VS.phaseView='selected';
+  VS.itemId=DB.items.filter(i=>i.projectId===id)[0]?.id||null;
+  render();
+}
+function backToTeam(){VS.view='team';VS.projectId=null;render()}
+
+function renderProject(el){
+  const p=DB.projects.find(x=>x.id===VS.projectId);
+  if(!p){el.innerHTML='';return}
+  el.innerHTML=`<div style="display:flex;flex-direction:column;height:100%;overflow:hidden;padding:12px 16px 14px">
+    <div class="detail-shell">
+      <div class="dhead" style="padding:9px 14px">
+        <div class="f1"><div class="dtitle">${esc(p.title)}</div><div class="ddesc">${esc(p.desc)} · ${esc(p.horizon)}</div></div>
+        ${isPlatformAdmin(CU)?`<button class="btn sm" onclick="openProjectAccessModal('${p.id}')">Доступы</button>`:''}
+      </div>
+      <div class="dcontent" id="detailContent"></div>
+    </div>
+  </div>`;
+  renderDetailMain();
+}
+
+function setTab(t){VS.tab=t;document.querySelectorAll('.vtab[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));renderDetailMain()}
+
+function pPhases(){return DB.phases.filter(p=>p.projectId===VS.projectId).sort((a,b)=>a.sort-b.sort)}
+function pItems(){let arr=DB.items.filter(i=>i.projectId===VS.projectId);const q=VS.taskSearch.toLowerCase().trim();if(q)arr=arr.filter(i=>[i.title,i.result,i.desc].join(' ').toLowerCase().includes(q));return arr}
+function selItem(){return DB.items.find(i=>i.id===VS.itemId)||pItems()[0]}
+const slabel={new:'Не начато',progress:'В работе',approval:'Согласование',risk:'Риск',done:'Готово'};
+const tlabel={task:'Задача',milestone:'Веха',risk:'Риск',decision:'Решение'};
+const bdg=s=>`<span class="badge ${s}">${slabel[s]||s}</span>`;
+function upItem(k,v){const i=selItem();if(!i)return;if(!canEditItemField(i,k))return deny('Нет права изменять эту задачу');i[k]=v;saveDB();renderDetailMain()}
+function selectItem(id){VS.itemId=id;const i=DB.items.find(x=>x.id===id);if(i)VS.phaseId=i.phaseId;renderDetailMain()}
+
+function renderDetailMain(){
+  const v=VS.tab;
+  if(v==='table')renderTable();
+  else if(v==='kanban')renderKanban2();
+  else if(v==='gantt')renderGantt();
+  else if(v==='roadmap')renderRoadmap();
+  else if(v==='calendar')renderCalendar();
+  else if(v==='analytics')renderAnalytics();
+}
+
+function renderTable(){
+  const phs=pPhases();
+  if(!VS.phaseId||!phs.find(p=>p.id===VS.phaseId))VS.phaseId=phs[0]?.id;
+  const canPhase=canManagePhases(VS.projectId);
+  const canTask=canCreateItem(VS.projectId);
+  let rail=`<div class="prail-title">Фазы проекта</div>
+  <div class="pvtoggle"><button class="${VS.phaseView==='selected'?'active':''}" onclick="VS.phaseView='selected';renderDetailMain()">Одна</button><button class="${VS.phaseView==='all'?'active':''}" onclick="VS.phaseView='all';renderDetailMain()">Все</button></div>
+  <button class="pcard ${VS.phaseView==='all'?'active':''}" onclick="VS.phaseView='all';renderDetailMain()"><div class="pname">Все фазы</div><div class="pmeta">${pItems().length} задач</div></button>
+  ${phs.map((p,idx)=>{const c=DB.items.filter(i=>i.phaseId===p.id&&i.projectId===VS.projectId).length;return`<button class="pcard ${VS.phaseView==='selected'&&VS.phaseId===p.id?'active':''}" onclick="VS.phaseView='selected';VS.phaseId='${p.id}';renderDetailMain()"><div class="pname"><span style="font-size:9px;font-weight:900;color:var(--soft);margin-right:4px">${idx+1}</span>${esc(p.title)}</div><div class="pmeta">${c} задач</div></button>`}).join('')}
+  ${canPhase?`<button class="pcard" style="border-style:dashed;opacity:.6" onclick="openPhaseModal()">+ Фаза</button>`:''}`;
+
+  const disp=VS.phaseView==='all'?phs:phs.filter(p=>p.id===VS.phaseId);
+  let main=`<div class="thead"><div>Ключевые задачи и вехи</div><div>Результат (Deliverable)</div><div>Длительность</div><div>Участники</div><div>Статус</div></div>`;
+  disp.forEach((ph,phIdx)=>{
+    const arr=pItems().filter(i=>i.phaseId===ph.id);
+    const phNum=phs.indexOf(ph)+1;
+    main+=`<div class="pstrip"><span><span style="font-size:10px;opacity:.6;margin-right:5px">${phNum}.</span>${esc(ph.title)}</span>${canTask?`<button class="btn sm" style="height:22px;font-size:10px" onclick="openItemModal('task','${ph.id}')">+ задача</button>`:''}<span>${arr.length}</span></div>`;
+    arr.forEach(i=>{
+      const cls=i.status==='done'?'done':i.type==='milestone'?'milestone':i.status==='risk'||i.type==='risk'?'risk':'';
+      const uIds=[...new Set([i.ownerId,...(i.people||[])].filter(Boolean))].slice(0,3);
+      main+=`<div class="trow ${VS.itemId===i.id?'active':''}" onclick="selectItem('${i.id}')">
+        <div class="tmain"><div class="dot ${cls}" style="margin-top:3px;flex-shrink:0"></div><div><div class="ttitle">${esc(i.title)}</div><div class="tsub">${tlabel[i.type]||'Задача'} · ${U(i.ownerId).name}</div></div></div>
+        <div class="tres">${esc(i.result||'')}</div>
+        <div class="tdate">${fmt(i.start)}<br>${fmt(i.due)}</div>
+        <div class="avs">${uIds.map(id=>{const u=U(id);return`<div class="tav" style="background:${u.color}" title="${esc(u.name)}">${esc(u.initials)}</div>`}).join('')}</div>
+        <div>${bdg(i.status)}</div>
+      </div>`;
+    });
+  });
+
+  const si=selItem();
+  const ce2=canEditItem(si);
+    const canCom=si?canAddCommentTo(si.projectId):false;
+    const canSeeCom=si?canViewComments(si.projectId):false;
+  let editor='<div style="padding:18px;color:var(--muted);font-size:12px">Выберите задачу</div>';
+  if(si){
+    const ph=DB.phases.find(p=>p.id===si.phaseId);
+    const dis=!ce2?'disabled':'';
+    editor=`<div class="editor">
+      <div class="ehero">
+        <div class="ekicker">${bdg(si.status)}<span style="background:var(--paper-soft);color:var(--muted)" class="badge">${tlabel[si.type]||'Задача'}</span>${ph?`<span class="badge" style="background:#E1F5FE;color:#0277BD">${esc(ph.title)}</span>`:''}</div>
+        <div class="etitle">${esc(si.title)}</div>
+        ${si.result?`<div style="font-size:11px;color:var(--muted);margin-top:5px">→ ${esc(si.result)}</div>`:''}
+      </div>
+      <div class="esec">
+        <div class="esec-head"><span class="esec-title">Основное</span></div>
+        <div class="fgrid">
+          <div class="fsm"><span class="lsm">Тип</span><select class="isml" onchange="upItem('type',this.value)" ${dis}>${['task','milestone','risk','decision'].map(t=>`<option value="${t}" ${si.type===t?'selected':''}>${tlabel[t]}</option>`).join('')}</select></div>
+          <div class="fsm"><span class="lsm">Статус</span><select class="isml" onchange="upItem('status',this.value)" ${dis}>${Object.entries(slabel).map(([k,v])=>`<option value="${k}" ${si.status===k?'selected':''}>${v}</option>`).join('')}</select></div>
+          <div class="fsm full"><span class="lsm">Название</span><input class="isml" value="${esc(si.title)}" onchange="upItem('title',this.value)" ${dis}></div>
+          <div class="fsm full"><span class="lsm">Результат</span><textarea class="isml txsm" onchange="upItem('result',this.value)" ${dis}>${esc(si.result||'')}</textarea></div>
+          <div class="fsm"><span class="lsm">Начало</span><input type="date" class="isml" value="${si.start||''}" onchange="upItem('start',this.value)" ${dis}></div>
+          <div class="fsm"><span class="lsm">Срок</span><input type="date" class="isml" value="${si.due||''}" onchange="upItem('due',this.value)" ${dis}></div>
+          <div class="fsm"><span class="lsm">Ответственный</span><select class="isml" onchange="upItem('ownerId',this.value)" ${dis}>${DB.users.map(u=>`<option value="${u.id}" ${si.ownerId===u.id?'selected':''}>${esc(u.name)}</option>`).join('')}</select></div>
+          <div class="fsm"><span class="lsm">Фаза</span><select class="isml" onchange="upItem('phaseId',this.value)" ${dis}>${pPhases().map(p=>`<option value="${p.id}" ${si.phaseId===p.id?'selected':''}>${esc(p.title)}</option>`).join('')}</select></div>
+        </div>
+      </div>
+      <div class="esec">
+        <div class="esec-head"><span class="esec-title">Подзадачи</span>${ce2?`<button class="btn sm" onclick="addSubtask()">+</button>`:''}</div>
+        ${(si.subtasks||[]).map((s,idx)=>`<div class="sub-row"><input type="checkbox" class="chk" ${s.done?'checked':''} onchange="editSub(${idx},'done',this.checked)" ${dis}><input class="mini-inp" value="${esc(s.title)}" onchange="editSub(${idx},'title',this.value)" ${dis}><input type="date" class="mini-date" value="${s.due||''}" onchange="editSub(${idx},'due',this.value)" ${dis}><button class="mini-del" onclick="delSub(${idx})" ${dis}>×</button></div>`).join('')}
+        ${ce2?`<div style="display:grid;grid-template-columns:minmax(0,1fr) 96px 60px;gap:5px;margin-top:5px"><input id="ns-t" class="isml" placeholder="Новая подзадача"><input id="ns-d" type="date" class="mini-date" style="height:30px"><button class="btn sm" onclick="addSubtask()">Добавить</button></div>`:''}
+      </div>
+      <div class="esec">
+        <div class="esec-head"><span class="esec-title">SMART</span></div>
+        ${['Specific — что именно','Measurable — как измерить','Achievable — реально ли','Relevant — зачем нужно','Time-bound — срок'].map((meta,idx)=>`<div class="smart-row"><div class="sletter">${'SMART'[idx]}</div><div><div class="smeta">${meta}</div><input class="isml" value="${esc((si.smart||[])[idx]||'')}" onchange="editSmart(${idx},this.value)" ${dis}></div></div>`).join('')}
+      </div>
+      <div class="esec">
+        <div class="esec-head"><span class="esec-title">Комментарии</span>${canCom?`<button class="btn sm" onclick="openCommentModal()">+</button>`:''}</div>
+        ${canSeeCom?(si.comments||[]).map(c=>{const u=U(c.userId);return`<div class="cmt"><strong>${esc(u.name)}</strong> <small>${esc(c.date)}</small><p>${esc(c.text)}</p></div>`}).join(''):`<div style="font-size:11px;color:var(--soft)">Комментарии скрыты настройками роли</div>`}
+        ${canSeeCom&&!(si.comments||[]).length?`<div style="font-size:11px;color:var(--soft)">Нет комментариев</div>`:''}
+      </div>
+    </div>`;
+  }
+
+  $('detailContent').innerHTML=`<div class="cgrid">
+    <div class="lpane"><div class="planner"><div class="phase-rail">${rail}</div><div class="task-area">${main}</div></div></div>
+    <div class="rpane">${editor}</div>
+  </div>`;
+}
+
+function editSub(idx,k,v){const i=selItem();if(!canAddSubtaskTo(i))return deny('Нет права изменять подзадачи');if(i?.subtasks?.[idx]!==undefined)i.subtasks[idx][k]=v;saveDB()}
+function delSub(idx){const i=selItem();if(!canAddSubtaskTo(i))return deny('Нет права удалять подзадачи');if(!i?.subtasks)return;i.subtasks.splice(idx,1);saveDB();renderDetailMain()}
+function addSubtask(){const i=selItem();if(!canAddSubtaskTo(i))return deny('Нет права добавлять подзадачи');const t=$('ns-t')?.value.trim();if(!t)return;i.subtasks=i.subtasks||[];i.subtasks.push({id:uid(),title:t,due:$('ns-d')?.value||'',done:false});saveDB();renderDetailMain();toast('Подзадача добавлена')}
+function editSmart(idx,v){const i=selItem();if(!canEditItem(i))return deny('Нет права редактировать SMART');i.smart=i.smart||['','','','',''];i.smart[idx]=v;saveDB()}
+
+function renderKanban2(){
+  const sts=[['new','Не начато'],['progress','В работе'],['approval','Согласование'],['risk','Риски'],['done','Готово']];
+  const phMap=Object.fromEntries(pPhases().map(p=>[p.id,p.title]));
+  $('detailContent').innerHTML=`<div class="kb-wrap"><div class="kb-grid">
+    ${sts.map(([s,l])=>{
+      const arr=pItems().filter(i=>i.status===s);
+      return`<div class="kb-col" ondragover="event.preventDefault()" ondrop="dropKb(event,'${s}')">
+        <div class="kb-head"><span class="kb-lbl">${l}</span><span class="kb-cnt">${arr.length}</span></div>
+        <div class="kb-body">${arr.map(i=>`<div class="kb-card" draggable="true" ondragstart="event.dataTransfer.setData('text','${i.id}')" onclick="selectItem('${i.id}');setTab('table')">
+          <div class="kb-title">${esc(i.title)}</div>
+          ${phMap[i.phaseId]?`<span class="kb-phase">${esc(phMap[i.phaseId])}</span><br>`:''}<span class="small muted">${U(i.ownerId).name} · ${fmt(i.due)}</span>
+        </div>`).join('')}</div>
+      </div>`;
+    }).join('')}
+  </div></div>`;
+}
+function dropKb(e,status){e.preventDefault();const id=e.dataTransfer.getData('text');const i=DB.items.find(x=>x.id===id);if(i&&canEditItemField(i,'status')){i.status=status;saveDB();renderKanban2();toast('Статус обновлён')}else deny('Нет права менять статус')}
+
+function renderGantt(){
+  const arr=pItems().sort((a,b)=>(a.start||'').localeCompare(b.start||''));
+  if(!arr.length){$('detailContent').innerHTML='<div style="padding:24px;text-align:center;color:var(--muted)">Нет задач с датами</div>';return}
+  const dates=arr.flatMap(i=>[i.start,i.due]).filter(Boolean).sort();
+  const rs=new Date(dates[0]+'T00:00:00');rs.setDate(rs.getDate()-2);
+  const re=new Date(dates[dates.length-1]+'T00:00:00');re.setDate(re.getDate()+4);
+  const days=[];for(let d=new Date(rs);d<=re;d.setDate(d.getDate()+1))days.push(new Date(d));
+  const DAY=30,td=today();
+  const dIdx=s=>s?Math.round((new Date(s+'T00:00:00')-rs)/86400000):-1;
+  const ds=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const dcls=d=>{const dow=d.getDay(),s=ds(d);return dow===0||dow===6?'weekend':s===td?'today':''};
+  let mH='';let cm=-1;
+  days.forEach((d,i)=>{if(d.getMonth()!==cm){cm=d.getMonth();let c=0;for(let j=i;j<days.length&&days[j].getMonth()===cm;j++)c++;mH+=`<div style="width:${c*DAY}px;flex-shrink:0;display:flex;align-items:center;padding:0 8px;border-right:1px solid var(--line);font-size:11px;font-weight:900;color:var(--ink);white-space:nowrap">${d.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})}</div>`}});
+  const dH=days.map(d=>{const cl=dcls(d);return`<div style="width:${DAY}px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:${cl==='today'?'#1565C0':'var(--muted)'};border-right:1px solid var(--line-soft);background:${cl==='weekend'?'rgba(21,101,192,.04)':cl==='today'?'rgba(21,101,192,.10)':'transparent'}">${d.getDate()}</div>`}).join('');
+  const cells=days.map(d=>{const cl=dcls(d);return`<div style="width:${DAY}px;flex-shrink:0;border-right:1px solid var(--line-soft);background:${cl==='weekend'?'rgba(21,101,192,.03)':cl==='today'?'rgba(21,101,192,.09)':'transparent'}"></div>`}).join('');
+  let lH='',rH='';
+  pPhases().forEach(ph=>{
+    const phArr=arr.filter(i=>i.phaseId===ph.id);if(!phArr.length)return;
+    lH+=`<div style="height:32px;padding:0 10px;display:flex;align-items:center;background:rgba(21,101,192,.06);border-bottom:1px solid var(--line);font-size:10px;font-weight:900;color:#1565C0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(ph.title)}</div>`;
+    rH+=`<div style="height:32px;display:flex;border-bottom:1px solid var(--line);background:rgba(21,101,192,.03)">${cells}</div>`;
+    phArr.forEach(i=>{
+      const col=i.status==='done'?'#00897B':i.type==='milestone'?'#0097A7':i.status==='risk'||i.type==='risk'?'#E53935':'#1565C0';
+      const l=Math.max(0,dIdx(i.start||dates[0])),r=dIdx(i.due||i.start||dates[0]),sp=Math.max(1,r-l+1);
+      lH+=`<div style="height:34px;padding:0 10px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--line-soft);cursor:pointer" onclick="selectItem('${i.id}');setTab('table')"><div style="width:6px;height:6px;border-radius:999px;background:${col};flex-shrink:0"></div><div style="font-size:11px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(i.title)}</div></div>`;
+      rH+=`<div style="height:34px;display:flex;position:relative;border-bottom:1px solid var(--line-soft);cursor:pointer" onclick="selectItem('${i.id}');setTab('table')">${cells}<div style="position:absolute;top:7px;bottom:7px;left:${l*DAY+2}px;width:${sp*DAY-4}px;border-radius:4px;background:${col};min-width:5px;opacity:.85"></div></div>`;
+    });
+  });
+  const ti=dIdx(td);
+  const tLine=ti>=0&&ti<days.length?`<div style="position:absolute;top:0;bottom:0;left:${ti*DAY+DAY/2}px;width:2px;background:#1565C0;opacity:.3;pointer-events:none;z-index:2"></div>`:'';
+  $('detailContent').innerHTML=`<div style="height:100%;display:grid;grid-template-columns:200px 1fr;overflow:hidden;background:#FAFCFF">
+    <div style="display:flex;flex-direction:column;border-right:2px solid var(--line);background:#FAFCFF">
+      <div style="height:50px;flex-shrink:0;display:flex;align-items:center;padding:0 10px;font-size:9px;text-transform:uppercase;letter-spacing:.12em;font-weight:900;color:var(--soft);border-bottom:2px solid var(--line)">Задачи</div>
+      <div style="overflow-y:auto;flex:1;scrollbar-width:none" id="gL">${lH}</div>
+    </div>
+    <div style="overflow:auto;display:flex;flex-direction:column" id="gR">
+      <div style="flex-shrink:0;position:sticky;top:0;z-index:3;background:rgba(250,252,255,.98);border-bottom:2px solid var(--line)">
+        <div style="display:flex;height:22px;border-bottom:1px solid var(--line);width:${days.length*DAY}px">${mH}</div>
+        <div style="display:flex;height:28px;width:${days.length*DAY}px">${dH}</div>
+      </div>
+      <div style="position:relative;width:${days.length*DAY}px">${tLine}${rH}</div>
+    </div>
+  </div>`;
+  const gl=$('gL'),gr=$('gR');
+  gr?.addEventListener('scroll',()=>{if(gl)gl.scrollTop=gr.scrollTop});
+}
+
+function renderRoadmap(){
+  const phs=pPhases();
+  $('detailContent').innerHTML=`<div style="height:100%;overflow:auto;padding:12px;background:#FAFCFF"><div style="display:grid;grid-template-columns:repeat(${phs.length||1},minmax(220px,1fr));gap:10px">
+    ${phs.map(p=>{const arr=pItems().filter(i=>i.phaseId===p.id);return`<div style="background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:11px;box-shadow:var(--shadow-sm)">
+      <div style="font-size:12px;font-weight:900;color:var(--ink);margin-bottom:9px;padding-bottom:7px;border-bottom:1px solid var(--line)">${esc(p.title)}</div>
+      ${arr.map(i=>`<div style="background:var(--paper-soft);border:1px solid var(--line);border-radius:9px;padding:8px;margin-bottom:6px;cursor:pointer" onclick="selectItem('${i.id}');setTab('table')">
+        <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:4px">${esc(i.title)}</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:5px">${esc(i.result||'')}</div>
+        ${bdg(i.status)}
+      </div>`).join('')}
+    </div>`}).join('')}
+  </div></div>`;
+}
+
+function renderCalendar(){
+  const now=new Date(),y=now.getFullYear(),m=now.getMonth();
+  let first=new Date(y,m,1).getDay()-1;if(first<0)first=6;
+  const dim=new Date(y,m+1,0).getDate();
+  let h=`<div style="height:100%;overflow:auto;background:#fff">
+    <div style="height:40px;padding:0 14px;display:flex;align-items:center;border-bottom:1px solid var(--line);font-weight:900;color:var(--ink);font-size:13px">${now.toLocaleDateString('ru-RU',{month:'long',year:'numeric'})}</div>
+    <div style="display:grid;grid-template-columns:repeat(7,minmax(100px,1fr));border-left:1px solid var(--line);border-top:1px solid var(--line);margin:12px">`;
+  ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].forEach(d=>h+=`<div style="height:30px;display:flex;align-items:center;justify-content:center;background:var(--paper-soft);font-size:10px;font-weight:900;color:var(--muted);border-right:1px solid var(--line);border-bottom:1px solid var(--line)">${d}</div>`);
+  for(let i=0;i<first;i++)h+=`<div style="border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-height:80px"></div>`;
+  for(let day=1;day<=dim;day++){
+    const date=`${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const arr=pItems().filter(i=>i.start===date||i.due===date);
+    const isToday=date===today();
+    h+=`<div style="min-height:80px;padding:6px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);background:#fff">
+      <div style="font-size:11px;color:${isToday?'#fff':'var(--soft)'};font-weight:900;margin-bottom:4px;${isToday?`width:20px;height:20px;background:var(--blue);border-radius:999px;display:flex;align-items:center;justify-content:center;`:''}">${day}</div>
+      ${arr.map(i=>`<div style="font-size:10px;background:var(--blue-soft);color:var(--blue);border-radius:5px;padding:3px 5px;margin-bottom:2px;cursor:pointer;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" onclick="selectItem('${i.id}');setTab('table')">${esc(i.title)}</div>`).join('')}
+    </div>`;
+  }
+  h+='</div></div>';
+  $('detailContent').innerHTML=h;
+}
+
+function renderAnalytics(){
+  const arr=pItems(),tot=arr.length||1;
+  const sts=Object.entries(slabel).map(([s,l])=>[l,arr.filter(i=>i.status===s).length,s]);
+  const qual=[['С результатом',arr.filter(i=>i.result).length],['Со SMART',arr.filter(i=>(i.smart||[]).filter(Boolean).length>=5).length],['С подзадачами',arr.filter(i=>(i.subtasks||[]).length).length]];
+  const clr={done:'#00897B',risk:'#E53935',approval:var2str('--teal','#0097A7')};
+  function var2str(n,fb){return fb}
+  $('detailContent').innerHTML=`<div style="height:100%;overflow:auto;padding:12px;background:#FAFCFF"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div style="background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:13px;box-shadow:var(--shadow-sm)">
+      <div style="font-weight:900;color:var(--ink);margin-bottom:11px;font-size:13px">Статусы</div>
+      ${sts.map(([l,n,s])=>`<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;margin-bottom:4px"><span>${l}</span><span>${n}</span></div><div style="height:6px;border-radius:999px;background:rgba(21,101,192,.10);overflow:hidden"><div style="height:100%;border-radius:999px;width:${n/tot*100}%;background:${clr[s]||'#1565C0'}"></div></div></div>`).join('')}
+    </div>
+    <div style="background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:13px;box-shadow:var(--shadow-sm)">
+      <div style="font-weight:900;color:var(--ink);margin-bottom:11px;font-size:13px">Качество управления</div>
+      ${qual.map(([l,n])=>`<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:12px;font-weight:800;margin-bottom:4px"><span>${l}</span><span>${n}/${arr.length}</span></div><div style="height:6px;border-radius:999px;background:rgba(21,101,192,.10);overflow:hidden"><div style="height:100%;border-radius:999px;width:${n/tot*100}%;background:linear-gradient(90deg,#1565C0,#29B6F6)"></div></div></div>`).join('')}
+    </div>
+  </div></div>`;
+}
+
+// ── MY TASKS ─────────────────────────────────────────────
+function gotoMyTasks(){VS.view='mytasks';render()}
+function renderMyTasks(el){
+  const myItems=DB.items.filter(i=>i.ownerId===CU.id||i.people?.includes(CU.id));
+  const byS={new:[],progress:[],approval:[],risk:[],done:[]};
+  myItems.forEach(i=>{if(byS[i.status])byS[i.status].push(i)});
+  el.innerHTML=`<div class="page-scroll">
+    <div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:14px">Мои задачи · ${myItems.length}</div>
+    ${Object.entries(byS).filter(([,a])=>a.length).map(([s,arr])=>`<div style="margin-bottom:16px">
+      <div class="flex gap8" style="margin-bottom:8px">${bdg(s)}<span class="small muted">${arr.length}</span></div>
+      ${arr.map(i=>{
+        const p=DB.projects.find(x=>x.id===i.projectId);
+        return`<div style="background:var(--paper);border:1px solid var(--line);border-radius:var(--r);padding:11px 13px;margin-bottom:6px;cursor:pointer;box-shadow:var(--shadow-sm)" onclick="openProject('${i.projectId}');VS.itemId='${i.id}';VS.tab='table';renderDetailMain()">
+          <div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px">${esc(i.title)}</div>
+          <div class="flex gap12 small muted">${p?`<span>📁 ${esc(p.title)}</span>`:''}<span>📅 ${fmt(i.due)}</span></div>
+        </div>`;
+      }).join('')}
+    </div>`).join('')}
+    ${!myItems.length?`<div class="empty"><div class="empty-ico">✅</div><div class="empty-t">Нет задач</div><div class="empty-s">Вам пока ничего не назначено</div></div>`:''}
+  </div>`;
+}
+
+// ── SETTINGS ─────────────────────────────────────────────
+function gotoSettings(){VS.view='settings';render()}
+let settingsTab='profile';
+let settingsTeamSubTab='info';
+function renderSettings(el){
+  const tabs=visibleSettingsTabs();
+  if(!tabs.some(([id])=>id===settingsTab))settingsTab=tabs[0]?.[0]||'profile';
+  el.innerHTML=`<div style="display:flex;height:100%;overflow:hidden">
+    <div style="width:190px;flex-shrink:0;border-right:1px solid var(--line);background:var(--paper);padding:14px 0;overflow-y:auto">
+      <div style="padding:0 14px 8px;font-size:9px;text-transform:uppercase;letter-spacing:.12em;font-weight:900;color:var(--soft)">Настройки</div>
+      ${tabs.map(([id,l])=>`<div style="display:flex;align-items:center;padding:8px 14px;cursor:pointer;font-size:12px;font-weight:700;color:${settingsTab===id?'var(--blue)':'var(--ink)'};background:${settingsTab===id?'#EEF4FF':'transparent'};border-left:3px solid ${settingsTab===id?'var(--blue)':'transparent'};transition:.12s" onclick="settingsTab='${id}';renderSettings($('mainContent'))">${l}</div>`).join('')}
+    </div>
+    <div style="flex:1;min-width:0;overflow-y:auto;padding:20px 24px">${renderSettingsTab()}</div>
+  </div>`;
+}
+
+function renderSettingsTab(){
+  if(!canOpenSettingsTab(settingsTab))return `<div class="empty"><div class="empty-ico">🔒</div><div class="empty-t">Нет доступа</div><div class="empty-s">Раздел скрыт настройками ролей.</div></div>`;
+  if(settingsTab==='profile')return renderSettingsProfile();
+  if(settingsTab==='teams')return renderSettingsTeams();
+  if(settingsTab==='users')return renderSettingsUsers();
+  if(settingsTab==='roles')return renderRoleMatrix();
+  return'';
+}
+
+function renderSettingsProfile(){
+  return`<div style="max-width:500px">
+    <div style="font-size:16px;font-weight:800;color:var(--ink);margin-bottom:16px">Мой профиль</div>
+    <div class="card" style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+        <div style="width:52px;height:52px;border-radius:999px;background:${CU.color};display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#fff">${esc(CU.initials)}</div>
+        <div><div style="font-size:15px;font-weight:800;color:var(--ink)">${esc(CU.name)}</div><div style="font-size:12px;color:var(--muted)">${platformRoleLabel(CU.platformRole)}</div></div>
+      </div>
+      <div class="field"><span class="lbl">Полное имя</span><input class="inp" id="pName" value="${esc(CU.name)}"></div>
+      <div class="field"><span class="lbl">Email</span><input class="inp" id="pEmail" value="${esc(CU.email||'')}" placeholder="email@company.kz"></div>
+      <div class="field"><span class="lbl">Роль</span><input class="inp" value="${platformRoleLabel(CU.platformRole)}" disabled style="opacity:.6"></div>
+      <button class="btn primary" onclick="saveProfileFull()">Сохранить</button>
+    </div>
+    <div class="card" style="margin-bottom:12px">
+      <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:12px">Данные входа</div>
+      <div class="field"><span class="lbl">Логин</span><input class="inp" id="pLogin" value="${esc(CU.login||CU.name)}" placeholder="Логин для входа"></div>
+      <div class="field"><span class="lbl">Новый пароль</span><input type="password" class="inp" id="pPass" placeholder="Введите новый пароль"></div>
+      <div class="field"><span class="lbl">Подтвердить пароль</span><input type="password" class="inp" id="pPass2" placeholder="Повторите пароль"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn primary" onclick="saveCredentials()">Сохранить пароль</button>
+        <button class="btn danger" onclick="logout()">Выйти</button>
+      </div>
+    </div>
+    ${isSuperAdmin(CU)?`<div class="card">
+      <div style="font-size:13px;font-weight:800;color:var(--ink);margin-bottom:8px">Сброс данных</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Все данные будут заменены демо-данными.</div>
+      <button class="btn danger" onclick="resetAll()">Сбросить к демо-данным</button>
+    </div>`:''}
+  </div>`;
+}
+function renderSettingsTeams(){
+  const isAdmin=isPlatformAdmin(CU);
+  const teams=isAdmin?DB.teams:myTeams().filter(t=>teamRole(t.id)==='lead');
+  const subtabs=[['info','Команды'],['projects','Проекты'],['members','Участники'],['access','Доступы']];
+  return`<div>
+    <div style="font-size:16px;font-weight:800;color:var(--ink);margin-bottom:14px">Команды</div>
+    <div style="display:flex;gap:0;margin-bottom:18px;border-bottom:2px solid var(--line)">
+      ${subtabs.map(([id,l])=>`<button onclick="settingsTeamSubTab='${id}';renderSettings($('mainContent'))" style="height:34px;padding:0 14px;border:0;border-bottom:2px solid ${settingsTeamSubTab===id?'var(--blue)':'transparent'};background:transparent;font-size:12px;font-weight:800;color:${settingsTeamSubTab===id?'var(--blue)':'var(--muted)'};cursor:pointer;margin-bottom:-2px">${l}</button>`).join('')}
+      <div style="margin-left:auto;align-self:center">${isAdmin&&settingsTeamSubTab==='info'?`<button class="btn sm primary" onclick="openTeamModal()">+ Команда</button>`:settingsTeamSubTab==='projects'?`<button class="btn sm primary" onclick="openProjectModal()">+ Проект</button>`:''}</div>
+    </div>
+    ${settingsTeamSubTab==='info'?renderStTeamInfo(teams):settingsTeamSubTab==='projects'?renderStProjects():settingsTeamSubTab==='members'?renderStMembers():renderStAccess()}
+  </div>`;
+}
+function renderStTeamInfo(teams){
+  const isAdmin=isPlatformAdmin(CU);
+  return(teams.map(t=>{
+    const leads=t.members.filter(m=>m.role==='lead').map(m=>U(m.userId).name).join(', ')||'—';
+    return`<div class="card" style="margin-bottom:12px">
+      <div class="flex gap12" style="margin-bottom:12px">
+        <div style="width:36px;height:36px;border-radius:11px;background:${t.color};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;font-size:13px;flex-shrink:0">${t.name.split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
+        <div class="f1"><div style="font-size:14px;font-weight:800;color:var(--ink)">${esc(t.name)}</div><div class="small muted">Руководитель: ${esc(leads)}</div></div>
+        ${isAdmin?`<button class="btn sm" onclick="openTeamModal('${t.id}')">Изменить</button><button class="btn sm danger" onclick="deleteTeam('${t.id}');renderSettings($('mainContent'))">Удалить</button>`:''}
+      </div>
+      <div class="data-table">
+        <div class="dt-head" style="grid-template-columns:1fr 120px 80px"><div>Участник</div><div>Роль</div><div></div></div>
+        ${t.members.map(m=>{const u=U(m.userId);return`<div class="dt-row" style="grid-template-columns:1fr 120px 80px">
+          <div class="flex gap8"><div class="dt-av" style="background:${u.color}">${esc(u.initials)}</div><div class="dt-name">${esc(u.name)}</div></div>
+          <div><select class="access-sel" onchange="changeTeamRole('${t.id}','${m.userId}',this.value)"><option value="lead" ${m.role==='lead'?'selected':''}>Руководитель</option><option value="member" ${m.role==='member'?'selected':''}>Участник</option></select></div>
+          <div>${m.userId!==CU.id?`<button class="btn sm danger" onclick="removeMember('${t.id}','${m.userId}');renderSettings($('mainContent'))">✕</button>`:''}</div>
+        </div>`}).join('')}
+      </div>
+      <div style="margin-top:10px"><button class="btn sm" onclick="openAddMemberModal('${t.id}')">+ Участник</button></div>
+    </div>`;
+  }).join(''))||(teams.length===0?`<div class="empty"><div class="empty-ico">👥</div><div class="empty-t">Нет команд</div></div>`:'');
+}
+function renderStProjects(){
+  const teams=myTeams();
+  const projs=teams.flatMap(t=>visibleProjects(t.id));
+  const slbl={new:'Не начато',progress:'В работе',done:'Готово',risk:'Риски'};
+  return`<div class="data-table">
+    <div class="dt-head" style="grid-template-columns:2fr 1fr 100px 60px 90px"><div>Проект</div><div>Команда</div><div>Статус</div><div>Задач</div><div></div></div>
+    ${projs.map(p=>{const t=DB.teams.find(x=>x.id===p.teamId);const cnt=DB.items.filter(i=>i.projectId===p.id).length;return`<div class="dt-row" style="grid-template-columns:2fr 1fr 100px 60px 90px;cursor:pointer" onclick="openProject('${p.id}')">
+      <div><div class="dt-name">${esc(p.title)}</div><div class="dt-sub">${esc(p.horizon)}</div></div>
+      <div class="small muted">${esc(t?.name||'')}</div>
+      <div><span class="badge ${p.status}">${slbl[p.status]||p.status}</span></div>
+      <div class="small muted">${cnt}</div>
+      <div onclick="event.stopPropagation()"><button class="btn sm" onclick="openProjectAccessModal('${p.id}')">Доступы</button></div>
+    </div>`;}).join('')}
+    ${projs.length===0?`<div style="padding:24px;text-align:center;color:var(--muted)">Нет проектов</div>`:''}
+  </div>`;
+}
+function renderStMembers(){
+  return myTeams().map(t=>`<div style="margin-bottom:20px">
+    <div style="font-size:12px;font-weight:800;color:var(--ink);margin-bottom:10px">${esc(t.name)}</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+      ${t.members.map(m=>{const u=U(m.userId);const cnt=DB.items.filter(i=>i.ownerId===u.id||i.people?.includes(u.id)).length;return`<div class="card" style="padding:14px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div style="width:38px;height:38px;border-radius:999px;background:${u.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;color:#fff;flex-shrink:0">${esc(u.initials)}</div>
+          <div class="f1"><div style="font-size:12px;font-weight:800;color:var(--ink)">${esc(u.name)}</div><div style="font-size:10px;color:var(--muted)">${esc(u.email||u.login||'')}</div></div>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span class="user-role-tag ${m.role==='lead'?'tag-lead':'tag-member'}">${m.role==='lead'?'Руководитель':'Участник'}</span>
+          <span style="font-size:10px;color:var(--muted);font-weight:700">${cnt} задач</span>
+        </div>
+      </div>`;}).join('')}
+    </div>
+  </div>`).join('');
+}
+function renderStAccess(){
+  return renderAdminAccess()+`<div style="margin-top:14px;text-align:right"><button class="btn primary" onclick="saveDB();toast('Доступы сохранены ✓')">Сохранить доступы</button></div>`;
+}
+function renderSettingsUsers(){
+  const canCreate=hasPermission('platform.users.create');
+  const canEdit=hasPermission('platform.users.edit');
+  return`<div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px"><div style="font-size:16px;font-weight:800;color:var(--ink)">Пользователи</div>${canCreate?`<button class="btn primary sm" onclick="openCreateUserModal()">+ Создать пользователя</button>`:''}</div>
+    <div class="data-table">
+      <div class="dt-head" style="grid-template-columns:2fr 1fr 1fr 130px 110px"><div>Пользователь</div><div>Команды</div><div>Проекты</div><div>Роль платформы</div><div></div></div>
+      ${DB.users.map(u=>{
+        const uTeams=DB.teams.filter(t=>t.members.some(m=>m.userId===u.id)).map(t=>t.name).join(', ')||'—';
+        const uProjects=DB.projects.filter(p=>p.access?.some(a=>a.userId===u.id&&a.role!=='none'&&a.level!=='none')).length;
+        const canRole=hasPermission('platform.roles.assign',{user:u,userId:u.id});
+        const canDelete=hasPermission('platform.users.delete',{user:u,userId:u.id});
+        return`<div class="dt-row" style="grid-template-columns:2fr 1fr 1fr 130px 110px">
+          <div class="flex gap8"><div class="dt-av" style="background:${u.color}">${esc(u.initials)}</div><div><div class="dt-name">${esc(u.name)}</div><div class="dt-sub">${esc(u.login||'')}${u.password||u.$password?' · 🔑':''}</div></div></div>
+          <div class="small muted ellipsis" style="max-width:110px">${esc(uTeams)}</div><div class="small muted">${uProjects} проектов</div>
+          <div><select class="access-sel" onchange="changePlatformRole('${u.id}',this.value)" ${canRole?'':'disabled'}><option value="superadmin" ${u.platformRole==='superadmin'?'selected':''}>Суперадмин</option><option value="admin" ${u.platformRole==='admin'?'selected':''}>Администратор</option><option value="user" ${u.platformRole==='user'?'selected':''}>Пользователь</option></select></div>
+          <div class="flex gap4">${canEdit?`<button class="btn sm" onclick="openEditUserModal('${u.id}')">Изменить</button>`:''}${canDelete?`<button class="btn sm danger" onclick="deleteUser('${u.id}');renderSettings($('mainContent'))">✕</button>`:''}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+
+function saveProfileFull(){
+  const n=$('pName')?.value.trim(),e=$('pEmail')?.value.trim();
+  if(!n){toast('Нужно имя');return}
+  const u=DB.users.find(x=>x.id===CU.id);
+  if(u){u.name=n;u.email=e||u.email;u.initials=n.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();CU=u;saveDB();$('topName').textContent=CU.name;$('topAv').textContent=CU.initials;toast('Сохранено ✓')}
+}
+function saveCredentials(){
+  const login=$('pLogin')?.value.trim();
+  const p1=$('pPass')?.value,p2=$('pPass2')?.value;
+  if(p1&&p1!==p2){toast('Пароли не совпадают');return}
+  const u=DB.users.find(x=>x.id===CU.id);
+  if(u){if(login)u.login=login;if(p1)u.password=p1;CU=u;saveDB();toast('Данные входа сохранены ✓')}
+}
+function logout(){CU=null;selectedUID=null;location.reload()}
+function resetAll(){if(!hasPermission('platform.data.reset'))return deny('Нет права сбрасывать данные');if(confirm('Сбросить все данные?')){localStorage.removeItem(STORE);location.reload()}}
+
+// ── TEAM MEMBERS MODAL ────────────────────────────────────
+function openTeamMembers(){
+  const t=DB.teams.find(x=>x.id===VS.teamId);if(!t)return;
+  $('modalBox').innerHTML=`<h2>Участники · ${esc(t.name)}</h2>
+    <div class="data-table" style="margin-bottom:12px">
+      <div class="dt-head" style="grid-template-columns:1fr 120px 80px"><div>Участник</div><div>Роль</div><div></div></div>
+      ${t.members.map(m=>{const u=U(m.userId);return`<div class="dt-row" style="grid-template-columns:1fr 120px 80px">
+        <div class="flex gap8"><div class="dt-av" style="background:${u.color}">${esc(u.initials)}</div><div class="dt-name">${esc(u.name)}</div></div>
+        <div><select class="access-sel" onchange="changeTeamRole('${t.id}','${m.userId}',this.value)"><option value="lead" ${m.role==='lead'?'selected':''}>Руководитель</option><option value="member" ${m.role==='member'?'selected':''}>Участник</option></select></div>
+        <div>${m.userId!==CU.id?`<button class="btn sm danger" onclick="removeMember('${t.id}','${m.userId}');openTeamMembers()">✕</button>`:''}</div>
+      </div>`}).join('')}
+    </div>
+    <button class="btn" onclick="openAddMemberModal('${t.id}')">+ Участник</button>
+    <div class="modal-foot"><button class="btn primary" onclick="saveDB();closeModal();toast('Сохранено ✓')">Сохранить</button></div>`;
+  openModal();
+}
+
+// ── MODALS ────────────────────────────────────────────────
+function openTeamModal(id){
+  const t=id?DB.teams.find(x=>x.id===id):null;
+  $('modalBox').innerHTML=`<h2>${t?'Изменить команду':'Новая команда'}</h2>
+    <div class="field"><span class="lbl">Название команды</span><input id="tName" class="inp" value="${esc(t?.name||'')}"></div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Отмена</button>
+      <button class="btn primary" onclick="saveTeam('${id||''}')">Сохранить</button>
+    </div>`;
+  openModal();
+}
+function saveTeam(id){
+  const name=$('tName').value.trim();if(!name){toast('Нужно название');return}
+  if(id){const t=DB.teams.find(x=>x.id===id);if(t)t.name=name}
+  else{DB.teams.push({id:uid(),name,color:'linear-gradient(135deg,#1565C0,#29B6F6)',members:[{userId:CU.id,role:'lead'}]})}
+  saveDB();closeModal();renderAdmin($('mainContent'));toast('Команда сохранена ✓');
+}
+function deleteTeam(id){if(!confirm('Удалить команду и все её проекты?'))return;DB.teams=DB.teams.filter(t=>t.id!==id);const pids=DB.projects.filter(p=>p.teamId===id).map(p=>p.id);DB.projects=DB.projects.filter(p=>p.teamId!==id);DB.items=DB.items.filter(i=>!pids.includes(i.projectId));DB.phases=DB.phases.filter(p=>!pids.includes(p.projectId));saveDB();renderAdmin($('mainContent'));toast('Команда удалена')}
+
+function genPassword(){return Math.random().toString(36).slice(2,10)+'!'+(Math.floor(Math.random()*90)+10)}
+
+function openCreateUserModal(){
+  const teams=DB.teams;
+  const projects=DB.projects;
+  const generatedPwd=genPassword();
+  $('modalBox').innerHTML=`<h2>Новый пользователь</h2>
+    <div class="form-2">
+      <div class="field"><span class="lbl">Фамилия Имя</span><input id="uName" class="inp" placeholder="Иванов Иван"></div>
+      <div class="field"><span class="lbl">Email</span><input id="uEmail" class="inp" placeholder="ivan@company.kz"></div>
+      <div class="field"><span class="lbl">Логин</span><input id="uLogin" class="inp" placeholder="ivan.ivanov"></div>
+      <div class="field"><span class="lbl">Пароль</span>
+        <div style="display:flex;gap:6px">
+          <input id="uPass" class="inp" value="${esc(generatedPwd)}" placeholder="Пароль" style="flex:1">
+          <button class="btn sm" onclick="$('uPass').value=genPassword()" type="button">↺</button>
+        </div>
+      </div>
+      <div class="field"><span class="lbl">Роль платформы</span><select id="uPlatformRole" class="sel"><option value="user">Пользователь</option><option value="admin">Администратор</option></select></div>
+      <div class="field"><span class="lbl">Добавить в команду</span><select id="uTeam" class="sel"><option value="">— не добавлять —</option>${teams.map(t=>`<option value="${t.id}">${esc(t.name)}</option>`).join('')}</select></div>
+      <div class="field"><span class="lbl">Роль в команде</span><select id="uTeamRole" class="sel"><option value="member">Участник</option><option value="lead">Руководитель</option></select></div>
+      <div class="field"><span class="lbl">Добавить в проект</span><select id="uProject" class="sel"><option value="">— не добавлять —</option>${projects.map(p=>`<option value="${p.id}">${esc(p.title)}</option>`).join('')}</select></div>
+      <div class="field"><span class="lbl">Доступ к проекту</span><select id="uAccess" class="sel"><option value="read">👁 Чтение</option><option value="full">✏️ Полный</option></select></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Отмена</button>
+      <button class="btn primary" onclick="createUserFull()">Создать</button>
+    </div>`;
+  openModal();
+}
+
+function createUserFull(){
+  const name=$('uName').value.trim();if(!name){toast('Нужно имя');return}
+  const colors=['linear-gradient(135deg,#1565C0,#42A5F5)','linear-gradient(135deg,#00897B,#26A69A)','linear-gradient(135deg,#7B1FA2,#AB47BC)','linear-gradient(135deg,#E65100,#FF8A65)','linear-gradient(135deg,#AD1457,#F06292)'];
+  const newId=uid();
+  const u={id:newId,name,initials:name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),color:colors[DB.users.length%colors.length],platformRole:$('uPlatformRole').value,email:$('uEmail').value.trim(),login:$('uLogin').value.trim()||name.toLowerCase().replace(/\s+/,'.'),$password:$('uPass').value};
+  DB.users.push(u);
+  // add to team
+  const teamId=$('uTeam').value;
+  if(teamId){const t=DB.teams.find(x=>x.id===teamId);if(t)t.members.push({userId:newId,role:$('uTeamRole').value})}
+  // add to project
+  const projId=$('uProject').value;
+  if(projId){const p=DB.projects.find(x=>x.id===projId);if(p){p.access=p.access||[];if(!p.access.find(a=>a.userId===newId))p.access.push({userId:newId,level:$('uAccess').value})}}
+  saveDB();closeModal();renderSettings($('mainContent'));toast(`Пользователь ${name} создан ✓`);
+}
+
+function openEditUserModal(userId){
+  const u=DB.users.find(x=>x.id===userId);if(!u)return;
+  const allTeams=DB.teams;
+  const allProjects=DB.projects;
+
+  // current memberships
+  const userTeamMemberships=allTeams.map(t=>{
+    const m=t.members.find(x=>x.userId===userId);
+    return{team:t,role:m?.role||null,isMember:!!m};
+  });
+  const userProjectAccess=allProjects.map(p=>{
+    const a=p.access?.find(x=>x.userId===userId);
+    const t=allTeams.find(x=>x.id===p.teamId);
+    return{project:p,team:t,level:a?.level||'none'};
+  });
+
+  $('modalBox').innerHTML=`<h2 style="font-size:20px">${esc(u.name)}</h2>
+    <div style="overflow-y:auto;max-height:70vh">
+
+      <!-- Основное -->
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:900;color:var(--soft);margin:0 0 8px">Данные</div>
+      <div class="form-2" style="margin-bottom:16px">
+        <div class="field"><span class="lbl">Фамилия Имя</span><input id="euName" class="inp" value="${esc(u.name)}"></div>
+        <div class="field"><span class="lbl">Email</span><input id="euEmail" class="inp" value="${esc(u.email||'')}" placeholder="email@company.kz"></div>
+        <div class="field"><span class="lbl">Логин</span><input id="euLogin" class="inp" value="${esc(u.login||'')}"></div>
+        <div class="field"><span class="lbl">Новый пароль</span>
+          <div style="display:flex;gap:5px">
+            <input id="euPass" class="inp" placeholder="Оставьте пустым" style="flex:1">
+            <button class="btn sm" onclick="$('euPass').value=genPassword()" type="button">↺</button>
+          </div>
+        </div>
+        <div class="field"><span class="lbl">Роль платформы</span>
+          <select id="euPlatformRole" class="sel" ${u.id===CU.id?'disabled':''}>
+            <option value="user" ${u.platformRole==='user'?'selected':''}>Пользователь</option>
+            <option value="admin" ${u.platformRole==='admin'?'selected':''}>Администратор</option>
+            <option value="superadmin" ${u.platformRole==='superadmin'?'selected':''}>Суперадмин</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Команды -->
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:900;color:var(--soft);margin:0 0 8px">Участие в командах</div>
+      <div style="border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px">
+        ${userTeamMemberships.map(({team:t,role,isMember})=>`
+          <div style="display:grid;grid-template-columns:1fr 140px 80px;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line-soft);align-items:center">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:8px;height:8px;border-radius:3px;background:${t.color.includes('1565')?'#1565C0':t.color.includes('7B1F')?'#7B1FA2':'#00897B'};flex-shrink:0"></div>
+              <span style="font-size:12px;font-weight:700;color:var(--ink)">${esc(t.name)}</span>
+            </div>
+            <select class="access-sel" id="tm-${t.id}" onchange="updateUserTeamRole('${userId}','${t.id}',this.value)">
+              <option value="none" ${!isMember?'selected':''}>— не участник —</option>
+              <option value="member" ${isMember&&role==='member'?'selected':''}>Участник</option>
+              <option value="lead" ${isMember&&role==='lead'?'selected':''}>Руководитель</option>
+            </select>
+            <span style="font-size:10px;color:${isMember?'var(--green)':'var(--soft)'};font-weight:800">${isMember?'✓ в команде':'—'}</span>
+          </div>`).join('')}
+      </div>
+
+      <!-- Проекты -->
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:900;color:var(--soft);margin:0 0 8px">Доступ к проектам</div>
+      <div style="border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-bottom:16px">
+        ${userProjectAccess.map(({project:p,team:t,level})=>`
+          <div style="display:grid;grid-template-columns:1fr 90px 190px;gap:8px;padding:9px 12px;border-bottom:1px solid var(--line-soft);align-items:center">
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--ink)">${esc(p.title)}</div>
+              <div style="font-size:10px;color:var(--muted)">${esc(t?.name||'')}</div>
+            </div>
+            <span class="badge ${p.status}" style="justify-self:start">${{new:'Не начато',progress:'В работе',done:'Готово',risk:'Риски'}[p.status]||p.status}</span>
+            <select class="access-sel ${level}" id="pa-${p.id}" onchange="this.className='access-sel '+this.value;updateUserProjectAccess('${userId}','${p.id}',this.value)">
+              <option value="none" ${level==='none'?'selected':''}>🚫 Нет доступа</option>
+              <option value="read" ${level==='read'?'selected':''}>👁 Чтение</option>
+              <option value="full" ${level==='full'?'selected':''}>✏️ Полный</option>
+            </select>
+          </div>`).join('')}
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Отмена</button>
+      <button class="btn primary" onclick="saveEditUser('${userId}')">Сохранить</button>
+    </div>`;
+  openModal();
+}
+
+function updateUserTeamRole(userId,teamId,role){
+  const t=DB.teams.find(x=>x.id===teamId);if(!t)return;
+  if(role==='none'){
+    t.members=t.members.filter(m=>m.userId!==userId);
+  } else {
+    const m=t.members.find(x=>x.userId===userId);
+    if(m)m.role=role;else t.members.push({userId,role});
+  }
+}
+
+function updateUserProjectAccess(userId,projectId,level){
+  const p=DB.projects.find(x=>x.id===projectId);if(!p)return;
+  p.access=p.access||[];
+  const a=p.access.find(x=>x.userId===userId);
+  if(a)a.level=level;else p.access.push({userId,level});
+}
+
+function saveEditUser(userId){
+  const u=DB.users.find(x=>x.id===userId);if(!u)return;
+  const name=$('euName')?.value.trim();if(!name){toast('Нужно имя');return}
+  u.name=name;u.initials=name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  u.email=$('euEmail')?.value.trim()||u.email;
+  u.login=$('euLogin')?.value.trim()||u.login;
+  const newPass=$('euPass')?.value;if(newPass)u.$password=newPass;
+  if(u.id!==CU.id)u.platformRole=$('euPlatformRole')?.value||u.platformRole;
+  if(u.id===CU.id){CU=u;$('topName').textContent=CU.name;$('topAv').textContent=CU.initials;}
+  saveDB();closeModal();renderSettings($('mainContent'));toast('Сохранено ✓');
+}
+
+function saveUser(){
+  const name=$('uName').value.trim();if(!name){toast('Нужно имя');return}
+  const colors=['linear-gradient(135deg,#1565C0,#42A5F5)','linear-gradient(135deg,#00897B,#26A69A)','linear-gradient(135deg,#7B1FA2,#AB47BC)','linear-gradient(135deg,#E65100,#FF8A65)'];
+  DB.users.push({id:uid(),name,initials:name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),color:colors[DB.users.length%colors.length],platformRole:'user'});
+  saveDB();closeModal();renderSettings($('mainContent'));toast('Пользователь создан ✓');
+}
+function deleteUser(id){const u=DB.users.find(x=>x.id===id);if(!hasPermission('platform.users.delete',{user:u,userId:id}))return deny('Нет права удалить пользователя');if(!confirm('Удалить пользователя?'))return;DB.users=DB.users.filter(u=>u.id!==id);DB.teams.forEach(t=>t.members=t.members.filter(m=>m.userId!==id));DB.projects.forEach(p=>p.access=p.access?.filter(a=>a.userId!==id)||[]);saveDB();renderSettings($('mainContent'));toast('Удалён')}
+
+function changePlatformRole(uid2,role){const u=DB.users.find(x=>x.id===uid2);if(!u)return;if(!hasPermission('platform.roles.assign',{user:u,userId:uid2}))return deny('Нет права менять роль платформы');if(role==='superadmin'&&!isSuperAdmin(CU))return deny('Суперадмина может назначить только суперадмин');u.platformRole=role;saveDB();renderSettings($('mainContent'));toast('Роль обновлена ✓')}
+
+
+function openAddMemberModal(teamId){
+  const t=DB.teams.find(x=>x.id===teamId);
+  const available=DB.users.filter(u=>!t?.members.some(m=>m.userId===u.id));
+  $('modalBox').innerHTML=`<h2>Добавить участника</h2>
+    ${available.length?`<div class="field"><span class="lbl">Пользователь</span><select id="newMember" class="sel">${available.map(u=>`<option value="${u.id}">${esc(u.name)}</option>`).join('')}</select></div>
+    <div class="field"><span class="lbl">Роль</span><select id="newMemberRole" class="sel"><option value="member">Участник</option><option value="lead">Руководитель</option></select></div>`
+    :`<div class="small muted" style="margin-bottom:12px">Все пользователи уже в команде. Создайте нового в разделе «Пользователи».</div>`}
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Отмена</button>
+      ${available.length?`<button class="btn primary" onclick="addMember('${teamId}')">Добавить</button>`:''}
+    </div>`;
+  openModal();
+}
+function addMember(teamId){const t=DB.teams.find(x=>x.id===teamId);const uid2=$('newMember')?.value;const role=$('newMemberRole')?.value||'member';if(t&&uid2){t.members.push({userId:uid2,role});saveDB();closeModal();renderAdmin($('mainContent'));toast('Участник добавлен ✓')}}
+function removeMember(teamId,userId){const t=DB.teams.find(x=>x.id===teamId);if(t){t.members=t.members.filter(m=>m.userId!==userId);saveDB();renderAdmin($('mainContent'));toast('Участник удалён')}}
+function changeTeamRole(teamId,userId,role){const t=DB.teams.find(x=>x.id===teamId);const m=t?.members.find(x=>x.userId===userId);if(m)m.role=role}
+
+function openProjectModal(teamId){
+  const tid=teamId||VS.teamId;
+  $('modalBox').innerHTML=`<h2>Новый проект</h2>
+    <div class="field"><span class="lbl">Название</span><input id="pjTitle" class="inp"></div>
+    <div class="field"><span class="lbl">Описание</span><textarea id="pjDesc" class="sel txsm" style="resize:vertical"></textarea></div>
+    <div class="form-2">
+      <div class="field"><span class="lbl">Горизонт</span><input id="pjHorizon" class="inp" placeholder="Q2 2026"></div>
+      <div class="field"><span class="lbl">Срок</span><input id="pjDue" type="date" class="inp" value="${today()}"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Отмена</button>
+      <button class="btn primary" onclick="saveProject('${tid}')">Создать</button>
+    </div>`;
+  openModal();
+}
+function saveProject(teamId){
+  const title=$('pjTitle').value.trim();if(!title){toast('Нужно название');return}
+  const newId=uid();
+  const team=DB.teams.find(t=>t.id===teamId);
+  const access=team?team.members.map(m=>({userId:m.userId,level:m.role==='lead'?'full':'read'})):[];
+  if(!access.find(a=>a.userId===CU.id))access.push({userId:CU.id,level:'full'});
+  DB.projects.push({id:newId,teamId,title,desc:$('pjDesc').value,status:'new',horizon:$('pjHorizon').value||'новый',start:today(),due:$('pjDue').value,ownerId:CU.id,access});
+  DB.phases.push({id:uid(),projectId:newId,title:'Фаза 1 · Старт',sort:1});
+  saveDB();closeModal();openProject(newId);toast('Проект создан ✓');
+}
+function openProjectAccessModal(projectId){
+  if(!canManageProjectAccess(projectId))return deny('Нет права управлять доступами проекта');
+  const p=DB.projects.find(x=>x.id===projectId);const t=DB.teams.find(x=>x.id===p?.teamId);if(!p||!t)return;
+  const users=[...new Set([...t.members.map(m=>m.userId),...DB.users.map(u=>u.id)])].map(id=>U(id));
+  $('modalBox').innerHTML=`<h2>Доступы · ${esc(p.title)}</h2><div class="matrix-wrap"><table class="matrix"><thead><tr><th>Пользователь</th><th>Команда</th><th>Роль в проекте</th></tr></thead><tbody>${users.map(u=>{const a=p.access?.find(x=>x.userId===u.id);const role=a?.role||levelToProjectRole(a?.level)||'none';const tr=t.members.find(m=>m.userId===u.id)?.role||'—';return`<tr><td><div class="matrix-user"><div class="dt-av" style="background:${u.color};width:24px;height:24px;font-size:8px">${esc(u.initials)}</div>${esc(u.name)}</div></td><td>${tr==='lead'?'Руководитель':tr==='member'?'Участник':'—'}</td><td><select class="access-sel ${projectRoleToLevel(role)}" id="pa-${u.id}" onchange="this.className='access-sel '+projectRoleToLevel(this.value)"><option value="projectManager" ${role==='projectManager'?'selected':''}>◇ Менеджер проекта</option><option value="member" ${role==='member'?'selected':''}>∘ Участник</option><option value="guest" ${role==='guest'?'selected':''}>△ Гость</option><option value="none" ${role==='none'?'selected':''}>🚫 Нет доступа</option></select></td></tr>`}).join('')}</tbody></table></div><div class="modal-foot"><button class="btn" onclick="closeModal()">Отмена</button><button class="btn primary" onclick="saveProjectAccess('${projectId}')">Сохранить</button></div>`;
+  openModal();
+}
+
+function saveProjectAccess(projectId){if(!canManageProjectAccess(projectId))return deny('Нет права управлять доступами проекта');DB.users.forEach(u=>{const sel=$('pa-'+u.id);if(sel)setProjectRole(projectId,u.id,sel.value)});saveDB();closeModal();renderSettings($('mainContent'));toast('Доступы сохранены ✓')}
+
+function openPhaseModal(){
+  if(!canManagePhases(VS.projectId))return deny('Нет права создавать фазы');
+  $('modalBox').innerHTML=`<h2>Новая фаза</h2>
+    <div class="field"><span class="lbl">Название</span><input id="phTitle" class="inp" placeholder="Фаза 2 · Разработка"></div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal()">Отмена</button><button class="btn primary" onclick="savePhase()">Добавить</button></div>`;
+  openModal();
+}
+function savePhase(){if(!canManagePhases(VS.projectId))return deny('Нет права создавать фазы');const title=$('phTitle').value.trim();if(!title){toast('Нужно название');return}DB.phases.push({id:uid(),projectId:VS.projectId,title,sort:pPhases().length+1});saveDB();closeModal();renderDetailMain();toast('Фаза добавлена ✓')}
+
+function openItemModal(type='task',phaseId=''){
+  if(!canCreateItem(VS.projectId))return deny('Нет права создавать задачи');
+  const ph=phaseId||VS.phaseId||pPhases()[0]?.id;
+  $('modalBox').innerHTML=`<h2>${type==='milestone'?'Новая веха':'Новая задача'}</h2>
+    <div class="field"><span class="lbl">Название</span><input id="itTitle" class="inp" placeholder="Что нужно сделать"></div>
+    <div class="field"><span class="lbl">Результат</span><textarea id="itResult" class="sel txsm" placeholder="Что должно быть на выходе"></textarea></div>
+    <div class="form-2">
+      <div class="field"><span class="lbl">Фаза</span><select id="itPhase" class="sel">${pPhases().map(p=>`<option value="${p.id}" ${p.id===ph?'selected':''}>${esc(p.title)}</option>`).join('')}</select></div>
+      <div class="field"><span class="lbl">Ответственный</span><select id="itOwner" class="sel">${DB.users.map(u=>`<option value="${u.id}" ${u.id===CU.id?'selected':''}>${esc(u.name)}</option>`).join('')}</select></div>
+      <div class="field"><span class="lbl">Начало</span><input id="itStart" type="date" class="inp" value="${today()}"></div>
+      <div class="field"><span class="lbl">Срок</span><input id="itDue" type="date" class="inp" value="${today()}"></div>
+    </div>
+    <div class="modal-foot"><button class="btn" onclick="closeModal()">Отмена</button><button class="btn primary" onclick="saveItem('${type}')">Создать</button></div>`;
+  openModal();
+}
+function saveItem(type){if(!canCreateItem(VS.projectId))return deny('Нет права создавать задачи');const title=$('itTitle').value.trim();if(!title){toast('Нужно название');return}const id=uid(),phaseId=$('itPhase').value;DB.items.push({id,projectId:VS.projectId,phaseId,type,title,result:$('itResult').value,desc:'',status:'new',ownerId:$('itOwner').value,people:[],start:$('itStart').value,due:$('itDue').value,smart:['','','','',''],subtasks:[],comments:[]});VS.itemId=id;VS.phaseId=phaseId;saveDB();closeModal();renderDetailMain();toast('Создано ✓')}
+function openCommentModal(){
+  const i=selItem();if(!i||!canAddCommentTo(i.projectId))return deny('Нет права оставлять комментарии');
+  $('modalBox').innerHTML=`<h2>Комментарий</h2><div class="field"><span class="lbl">Текст</span><textarea id="cmtText" class="sel txsm"></textarea></div><div class="modal-foot"><button class="btn" onclick="closeModal()">Отмена</button><button class="btn primary" onclick="saveComment()">Добавить</button></div>`;
+  openModal();
+}
+function saveComment(){const i=selItem();if(!i||!canAddCommentTo(i.projectId))return deny('Нет права оставлять комментарии');const t=$('cmtText').value.trim();if(!t){toast('Нужен текст');return}i.comments=i.comments||[];i.comments.push({userId:CU.id,text:t,date:today()});saveDB();closeModal();renderDetailMain();toast('Комментарий добавлен ✓')}
+
+// ── BOOT ─────────────────────────────────────────────────
+DB=loadDB();
+initLogin();
+</script>
+</body>
+</html>

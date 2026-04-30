@@ -1,0 +1,85 @@
+import React, { useMemo, useState } from 'react';
+import { useApp } from '../../app/AppContext.jsx';
+import { Badge } from '../../shared/ui/Badge.jsx';
+import { Button } from '../../shared/ui/Button.jsx';
+import { Avatar } from '../../shared/ui/Avatar.jsx';
+import { canEditTask, canChangeTaskStatus, canManageSubtasks, isTaskOwnedBy } from '../../services/permissions.js';
+
+export function TaskDetail({ item }) {
+  const { db, currentUser, updateItem, deleteItem, addComment, addSubtask, updateSubtask, setRoute, hasPermission } = useApp();
+  const [comment, setComment] = useState('');
+  const [subtask, setSubtask] = useState('');
+  const canEdit = useMemo(() => canEditTask(db, currentUser, item), [db, currentUser, item]);
+  const canStatus = useMemo(() => canChangeTaskStatus(db, currentUser, item), [db, currentUser, item]);
+  const canSubtasks = useMemo(() => canManageSubtasks(db, currentUser, item), [db, currentUser, item]);
+  const canComment = item && hasPermission('project.comment.create', { projectId: item.projectId });
+  const canViewComments = item && hasPermission('project.comment.view', { projectId: item.projectId });
+  const owner = item ? db.users.find(user => user.id === item.ownerId) : null;
+  const project = item ? db.projects.find(project => project.id === item.projectId) : null;
+  const projectUsers = project ? [...new Set([...(project.access || []).map(entry => entry.userId), ...(db.teams.find(team => team.id === project.teamId)?.members || []).map(member => member.userId)])]
+    .map(userId => db.users.find(user => user.id === userId)).filter(Boolean) : [];
+
+  if (!item) return <aside className="task-detail"><div className="empty"><div><strong>Выберите задачу</strong><span>Детали появятся справа.</span></div></div></aside>;
+
+  function patch(key, value) {
+    if (key === 'status' && !canStatus) return;
+    if (key !== 'status' && !canEdit) return;
+    updateItem(item.id, { [key]: value });
+  }
+
+  function submitComment() {
+    if (!comment.trim()) return;
+    addComment(item.id, comment);
+    setComment('');
+  }
+
+  function submitSubtask() {
+    if (!subtask.trim() || !canSubtasks) return;
+    addSubtask(item.id, subtask);
+    setSubtask('');
+  }
+
+  return (
+    <aside className="task-detail">
+      <section className="detail-card">
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <Badge value={item.type} />
+          <Badge value={item.status} />
+          {isTaskOwnedBy(currentUser, item) ? <span className="badge badge-member">своя</span> : null}
+        </div>
+        <div className="detail-title">{item.title}</div>
+        <div className="small muted">Ответственный: {owner ? <><Avatar user={owner} size="sm" /> {owner.name}</> : '—'}</div>
+      </section>
+
+      <section className="detail-card">
+        <div className="section-title">Основное</div>
+        <label className="field"><span className="label">Ключевые задачи и вехи</span><input className="input" disabled={!canEdit} value={item.title} onChange={e => patch('title', e.target.value)} /></label>
+        <label className="field"><span className="label">Результат (Deliverable)</span><input className="input" disabled={!canEdit} value={item.result || ''} onChange={e => patch('result', e.target.value)} /></label>
+        <label className="field"><span className="label">Описание</span><textarea className="textarea" disabled={!canEdit} value={item.desc || ''} onChange={e => patch('desc', e.target.value)} /></label>
+        <div className="form-grid">
+          <label className="field"><span className="label">Старт</span><input className="input" type="date" disabled={!canEdit} value={item.start || ''} onChange={e => patch('start', e.target.value)} /></label>
+          <label className="field"><span className="label">Дедлайн</span><input className="input" type="date" disabled={!canEdit} value={item.due || ''} onChange={e => patch('due', e.target.value)} /></label>
+        </div>
+        <label className="field"><span className="label">Статус</span><select className="select" disabled={!canStatus} value={item.status} onChange={e => patch('status', e.target.value)}><option value="new">Не начато</option><option value="progress">В работе</option><option value="approval">Согласование</option><option value="risk">Риск</option><option value="done">Готово</option></select></label>
+        <label className="field"><span className="label">Ответственный</span><select className="select" disabled={!canEdit} value={item.ownerId || ''} onChange={e => patch('ownerId', e.target.value)}>{projectUsers.map(user => <option key={user.id} value={user.id}>{user.name}</option>)}</select></label>
+      </section>
+
+      <section className="detail-card">
+        <div className="section-title">Подзадачи</div>
+        {(item.subtasks || []).map(task => <div className="subtask-row" key={task.id}><input type="checkbox" disabled={!canSubtasks} checked={task.done} onChange={e => updateSubtask(item.id, task.id, { done: e.target.checked })} /><input className="input" style={{ padding: 5 }} disabled={!canSubtasks} value={task.title} onChange={e => updateSubtask(item.id, task.id, { title: e.target.value })} /><input className="input" style={{ padding: 5 }} disabled={!canSubtasks} type="date" value={task.due || ''} onChange={e => updateSubtask(item.id, task.id, { due: e.target.value })} /></div>)}
+        {canSubtasks ? <div style={{ display: 'flex', gap: 8 }}><input className="input" value={subtask} placeholder="Новая подзадача" onChange={e => setSubtask(e.target.value)} /><Button size="sm" onClick={submitSubtask}>Добавить</Button></div> : <div className="small muted">Нет прав на изменение подзадач.</div>}
+      </section>
+
+      {canViewComments ? <section className="detail-card">
+        <div className="section-title">Комментарии</div>
+        {(item.comments || []).map(itemComment => {
+          const user = db.users.find(entry => entry.id === itemComment.userId);
+          return <div className="comment" key={itemComment.id || `${itemComment.userId}${itemComment.date}`}><div className="strong small">{user?.name || 'Пользователь'} <span className="muted">· {itemComment.date}</span></div><div className="small muted">{itemComment.text}</div></div>;
+        })}
+        {canComment ? <div style={{ display: 'grid', gap: 8 }}><textarea className="textarea" value={comment} onChange={e => setComment(e.target.value)} placeholder="Комментарий" /><Button size="sm" onClick={submitComment}>Отправить</Button></div> : null}
+      </section> : null}
+
+      {hasPermission('project.task.delete', { projectId: item.projectId }) ? <Button variant="danger" onClick={() => { if (deleteItem(item.id)) setRoute(prev => ({ ...prev, itemId: null })); }}>Удалить задачу</Button> : null}
+    </aside>
+  );
+}

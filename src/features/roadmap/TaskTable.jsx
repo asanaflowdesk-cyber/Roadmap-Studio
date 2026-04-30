@@ -3,6 +3,7 @@ import { useApp } from '../../app/AppContext.jsx';
 import { Badge } from '../../shared/ui/Badge.jsx';
 import { Avatar } from '../../shared/ui/Avatar.jsx';
 import { fmt, daysBetween } from '../../shared/utils/date.js';
+import { canChangeTaskStatus } from '../../services/permissions.js';
 
 function typeDot(item) {
   if (item.status === 'done') return 'dot-done';
@@ -10,6 +11,14 @@ function typeDot(item) {
   if (item.type === 'milestone') return 'dot-milestone';
   return '';
 }
+
+const STATUS_OPTIONS = [
+  ['new', 'Не начато'],
+  ['progress', 'В работе'],
+  ['approval', 'Согласование'],
+  ['risk', 'Риск'],
+  ['done', 'Готово']
+];
 
 function phaseStats(items) {
   const total = items.length;
@@ -21,7 +30,7 @@ function phaseStats(items) {
 }
 
 export function TaskTable({ project, phases, items }) {
-  const { db, route, setRoute } = useApp();
+  const { db, currentUser, route, setRoute, updateItem } = useApp();
   const activePhaseId = route.phaseId || phases[0]?.id || null;
   const phaseView = route.phaseView || 'selected';
   const visiblePhases = phaseView === 'all' ? phases : phases.filter(phase => phase.id === activePhaseId);
@@ -90,7 +99,21 @@ export function TaskTable({ project, phases, items }) {
                         <div className="small muted">{item.result || '—'}</div>
                         <div className="small strong">{daysBetween(item.start, item.due)} дн.</div>
                         <div style={{ display: 'flex' }}>{people.slice(0, 3).map(user => <Avatar key={user.id} user={user} size="sm" />)}</div>
-                        <div><Badge value={item.status} /></div>
+                        <div>
+                          {canChangeTaskStatus(db, currentUser, item) ? (
+                            <select
+                              className="status-select"
+                              value={item.status}
+                              onClick={event => event.stopPropagation()}
+                              onChange={event => {
+                                event.stopPropagation();
+                                updateItem(item.id, { status: event.target.value });
+                              }}
+                            >
+                              {STATUS_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                            </select>
+                          ) : <Badge value={item.status} />}
+                        </div>
                       </div>
                     );
                   })}

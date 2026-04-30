@@ -74,20 +74,38 @@ export function isTaskOwnedBy(user, item) {
   return item.ownerId === user.id || (item.people || []).includes(user.id);
 }
 
+export function isPlatformAdmin(user) {
+  return Boolean(user && ['superadmin', 'admin'].includes(user.platformRole));
+}
+
+export function projectRoleForItem(db, user, item) {
+  if (!user || !item) return null;
+  return projectRoleOf(db, user.id, item.projectId);
+}
+
 export function canEditTask(db, user, item) {
-  if (!item) return false;
+  if (!user || !item || user.status === 'blocked') return false;
+  if (isPlatformAdmin(user)) return true;
+  const projectRole = projectRoleForItem(db, user, item);
+  if (projectRole === 'projectManager') return true;
   if (hasPermission(db, user, 'project.task.editAny', { projectId: item.projectId })) return true;
   return isTaskOwnedBy(user, item) && hasPermission(db, user, 'project.task.editOwn', { projectId: item.projectId });
 }
 
 export function canChangeTaskStatus(db, user, item) {
-  if (!item) return false;
+  if (!user || !item || user.status === 'blocked') return false;
+  if (isPlatformAdmin(user)) return true;
+  const projectRole = projectRoleForItem(db, user, item);
+  if (projectRole === 'projectManager') return true;
   if (hasPermission(db, user, 'project.task.statusAny', { projectId: item.projectId })) return true;
   return isTaskOwnedBy(user, item) && hasPermission(db, user, 'project.task.statusOwn', { projectId: item.projectId });
 }
 
 export function canManageSubtasks(db, user, item) {
-  if (!item) return false;
+  if (!user || !item || user.status === 'blocked') return false;
+  if (isPlatformAdmin(user)) return true;
+  const projectRole = projectRoleForItem(db, user, item);
+  if (projectRole === 'projectManager') return true;
   if (hasPermission(db, user, 'project.subtask.manageAny', { projectId: item.projectId })) return true;
   return isTaskOwnedBy(user, item) && hasPermission(db, user, 'project.subtask.manageOwn', { projectId: item.projectId });
 }

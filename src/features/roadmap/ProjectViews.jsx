@@ -3,6 +3,7 @@ import { useApp } from '../../app/AppContext.jsx';
 import { Badge } from '../../shared/ui/Badge.jsx';
 import { fmt, daysBetween } from '../../shared/utils/date.js';
 import { Avatar } from '../../shared/ui/Avatar.jsx';
+import { Button } from '../../shared/ui/Button.jsx';
 
 const statuses = [['new', 'Не начато'], ['progress', 'В работе'], ['approval', 'Согласование'], ['risk', 'Риски'], ['done', 'Готово']];
 const DAY = 86400000;
@@ -22,6 +23,10 @@ function monthLabel(date) {
   return date.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
 }
 
+function openItem(setRoute, item, tabFallback = null) {
+  setRoute(prev => ({ ...prev, ...(tabFallback ? { tab: tabFallback } : {}), itemId: item.id, phaseId: item.phaseId }));
+}
+
 export function KanbanView({ items, phases }) {
   const { setRoute, route } = useApp();
   const phaseName = Object.fromEntries(phases.map(phase => [phase.id, phase.title]));
@@ -29,7 +34,7 @@ export function KanbanView({ items, phases }) {
     <div className="status-board">
       {statuses.map(([status, label]) => {
         const list = items.filter(item => item.status === status);
-        return <div className="status-col" key={status}><div className="status-head"><span>{label}</span><span className="badge badge-task">{list.length}</span></div>{list.map(item => <div key={item.id} className="kanban-card" onClick={() => setRoute(prev => prev.projectId === item.projectId ? ({ ...prev, itemId: item.id, phaseId: item.phaseId }) : ({ ...prev, view: 'project', projectId: item.projectId, tab: 'kanban', itemId: item.id, phaseId: item.phaseId }))}><div className="strong small">{item.title}</div><div className="small muted">{phaseName[item.phaseId]}</div><Badge value={item.type} /></div>)}</div>;
+        return <div className="status-col" key={status}><div className="status-head"><span>{label}</span><span className="badge badge-task">{list.length}</span></div>{list.map(item => <div key={item.id} className={`kanban-card compact-card ${route.itemId === item.id ? 'active' : ''}`} onClick={() => openItem(setRoute, item)}><div className="strong small">{item.title}</div><div className="small muted">{phaseName[item.phaseId]}</div><Badge value={item.type} /></div>)}</div>;
       })}
     </div>
   );
@@ -59,10 +64,6 @@ export function GanttView({ project, items, phases }) {
     return { gridColumn: `${left} / span ${span}` };
   }
 
-  function toggle(phaseId) {
-    setCollapsed(prev => ({ ...prev, [phaseId]: !prev[phaseId] }));
-  }
-
   return (
     <div className="gantt-page">
       <div className="gantt-card">
@@ -75,9 +76,7 @@ export function GanttView({ project, items, phases }) {
         </div>
         <div className="gantt-grid" style={{ '--day-count': range }}>
           <div className="gantt-left gantt-corner">Задачи</div>
-          <div className="gantt-months">
-            {months.map(month => <div key={`${month.label}-${month.start}`} style={{ gridColumn: `${month.start} / span ${month.span}` }}>{month.label}</div>)}
-          </div>
+          <div className="gantt-months">{months.map(month => <div key={`${month.label}-${month.start}`} style={{ gridColumn: `${month.start} / span ${month.span}` }}>{month.label}</div>)}</div>
           <div className="gantt-left gantt-days-label" />
           <div className="gantt-days">{days.map(day => <div key={day.toISOString()}>{day.getDate()}</div>)}</div>
 
@@ -87,7 +86,7 @@ export function GanttView({ project, items, phases }) {
             const done = phaseItems.filter(item => item.status === 'done').length;
             return (
               <React.Fragment key={phase.id}>
-                <button className="gantt-left gantt-phase" onClick={() => toggle(phase.id)}>
+                <button className="gantt-left gantt-phase" onClick={() => setCollapsed(prev => ({ ...prev, [phase.id]: !prev[phase.id] }))}>
                   <span>{isCollapsed ? '›' : '⌄'}</span>
                   <strong>Фаза {phaseIndex + 1} · {phase.title}</strong>
                   <em>{phaseItems.length} задач · {phaseItems.length ? Math.round(done / phaseItems.length * 100) : 0}%</em>
@@ -95,12 +94,8 @@ export function GanttView({ project, items, phases }) {
                 <div className="gantt-phase-line" />
                 {!isCollapsed && phaseItems.map(item => (
                   <React.Fragment key={item.id}>
-                    <button className={`gantt-left gantt-task-title ${item.id === undefined ? '' : ''}`} onClick={() => setRoute(prev => ({ ...prev, itemId: item.id, phaseId: item.phaseId }))}><span className={`dot ${item.type === 'risk' ? 'dot-risk' : item.type === 'milestone' ? 'dot-milestone' : item.status === 'done' ? 'dot-done' : ''}`} /><span>{item.title}</span></button>
-                    <div className="gantt-track">
-                      <div className={`gantt-task-bar gantt-task-${item.type} ${item.status === 'done' ? 'done' : ''}`} style={position(item)} title={`${item.title}: ${fmt(item.start)} → ${fmt(item.due)}`}>
-                        <span>{daysBetween(item.start, item.due)} дн.</span>
-                      </div>
-                    </div>
+                    <button className="gantt-left gantt-task-title" onClick={() => openItem(setRoute, item)}><span className={`dot ${item.type === 'risk' ? 'dot-risk' : item.type === 'milestone' ? 'dot-milestone' : item.status === 'done' ? 'dot-done' : ''}`} /><span>{item.title}</span></button>
+                    <div className="gantt-track"><div className={`gantt-task-bar gantt-task-${item.type} ${item.status === 'done' ? 'done' : ''}`} style={position(item)} title={`${item.title}: ${fmt(item.start)} → ${fmt(item.due)}`}><span>{daysBetween(item.start, item.due)} дн.</span></div></div>
                   </React.Fragment>
                 ))}
               </React.Fragment>
@@ -114,18 +109,35 @@ export function GanttView({ project, items, phases }) {
 
 export function RoadmapView({ phases, items }) {
   const { setRoute, route } = useApp();
-  return <div className="page"><div className="grid">{phases.map(phase => <section className="card card-pad" key={phase.id}><div className="eyebrow">Фаза {phase.sort}</div><h2 className="h1" style={{ fontSize: 26 }}>{phase.title}</h2><div className="grid" style={{ marginTop: 14 }}>{items.filter(item => item.phaseId === phase.id).map(item => <button type="button" className={`card card-pad task-click-card ${route.itemId === item.id ? 'active' : ''}`} key={item.id} onClick={() => setRoute(prev => ({ ...prev, itemId: item.id, phaseId: item.phaseId }))}><Badge value={item.status} /><div className="strong" style={{ marginTop: 8 }}>{item.title}</div><div className="small muted">{item.result || '—'} · {fmt(item.start)} → {fmt(item.due)}</div></button>)}</div></section>)}</div></div>;
+  return <div className="page"><div className="grid">{phases.map(phase => <section className="card card-pad compact-card" key={phase.id}><div className="eyebrow">Фаза {phase.sort}</div><h2 className="h1" style={{ fontSize: 24 }}>{phase.title}</h2><div className="grid" style={{ marginTop: 12 }}>{items.filter(item => item.phaseId === phase.id).map(item => <button type="button" className={`card card-pad task-click-card compact-card ${route.itemId === item.id ? 'active' : ''}`} key={item.id} onClick={() => openItem(setRoute, item)}><Badge value={item.status} /><div className="strong" style={{ marginTop: 6 }}>{item.title}</div><div className="small muted">{item.result || '—'} · {fmt(item.start)} → {fmt(item.due)}</div></button>)}</div></section>)}</div></div>;
 }
 
 export function CalendarView({ items }) {
   const { setRoute, route } = useApp();
+  const [currentMonth, setCurrentMonth] = useState(() => new Date());
+  const today = new Date();
+  const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+  const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
+  const start = new Date(monthStart);
+  start.setDate(monthStart.getDate() - ((monthStart.getDay() + 6) % 7));
+  const end = new Date(monthEnd);
+  end.setDate(monthEnd.getDate() + (6 - ((monthEnd.getDay() + 6) % 7)));
+  const days = [];
+  for (let d = new Date(start); d <= end; d = addDays(d, 1)) days.push(new Date(d));
   const byDate = items.reduce((acc, item) => {
-    const key = item.due || 'Без даты';
-    acc[key] = acc[key] || [];
-    acc[key].push(item);
+    const key = item.due || item.start;
+    if (!key) return acc;
+    (acc[key] ||= []).push(item);
     return acc;
   }, {});
-  return <div className="page"><div className="page-narrow"><div className="grid">{Object.entries(byDate).sort(([a], [b]) => a.localeCompare(b)).map(([date, list]) => <section className="card card-pad" key={date}><div className="strong">{date === 'Без даты' ? date : fmt(date)}</div><div className="grid" style={{ marginTop: 10 }}>{list.map(item => <button type="button" key={item.id} className={`card card-pad task-click-card ${route.itemId === item.id ? 'active' : ''}`} onClick={() => setRoute(prev => ({ ...prev, itemId: item.id, phaseId: item.phaseId }))}><Badge value={item.status} /><span className="strong" style={{ marginLeft: 8 }}>{item.title}</span></button>)}</div></section>)}</div></div></div>;
+
+  return <div className="page"><div className="calendar-card card compact-card"><div className="calendar-head"><Button size="sm" variant="ghost" onClick={() => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}>‹</Button><div className="calendar-head-title">{monthLabel(monthStart)}</div><div className="calendar-head-actions"><Button size="sm" variant="ghost" onClick={() => setCurrentMonth(new Date())}>Сегодня</Button><Button size="sm" variant="ghost" onClick={() => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}>›</Button></div></div><div className="calendar-weekdays">{['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(day => <div key={day}>{day}</div>)}</div><div className="calendar-grid">{days.map(day => {
+    const key = day.toISOString().slice(0, 10);
+    const dayItems = byDate[key] || [];
+    const isToday = key === today.toISOString().slice(0, 10);
+    const inMonth = day.getMonth() === currentMonth.getMonth();
+    return <div key={key} className={`calendar-cell ${isToday ? 'today' : ''} ${inMonth ? '' : 'muted-month'}`}><div className="calendar-date">{day.getDate()}</div><div className="calendar-list">{dayItems.slice(0,3).map(item => <button type="button" key={item.id} className={`calendar-item status-${item.status} ${route.itemId === item.id ? 'active' : ''}`} onClick={() => openItem(setRoute, item)}>{item.title}</button>)}{dayItems.length > 3 ? <div className="calendar-more">+{dayItems.length - 3} ещё</div> : null}</div></div>;
+  })}</div></div></div>;
 }
 
 export function AnalyticsView({ project, items, db }) {
@@ -134,5 +146,5 @@ export function AnalyticsView({ project, items, db }) {
   const done = items.filter(item => item.status === 'done').length;
   const risks = items.filter(item => item.status === 'risk' || item.type === 'risk').length;
   const assigned = [...new Set(items.flatMap(item => [item.ownerId, ...(item.people || [])]))].map(id => db.users.find(user => user.id === id && user.platformRole === 'user')).filter(Boolean);
-  return <div className="page"><div className="page-narrow"><div className="page-head"><div><div className="eyebrow">Аналитика</div><h1 className="h1">{project.title}</h1></div></div><div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))' }}><div className="card card-pad"><div className="eyebrow">Всего задач</div><div className="h1">{items.length}</div></div><div className="card card-pad"><div className="eyebrow">Выполнено</div><div className="h1">{Math.round(done / total * 100)}%</div></div><div className="card card-pad"><div className="eyebrow">Риски</div><div className="h1">{risks}</div></div><div className="card card-pad"><div className="eyebrow">Участники</div><div style={{ display: 'flex', marginTop: 14 }}>{assigned.map(user => <Avatar key={user.id} user={user} />)}</div></div></div><section className="card card-pad" style={{ marginTop: 16 }}><div className="section-title">Задачи проекта</div><div className="grid" style={{ marginTop: 10 }}>{items.map(item => <button type="button" key={item.id} className={`task-click-card ${route.itemId === item.id ? 'active' : ''}`} onClick={() => setRoute(prev => ({ ...prev, itemId: item.id, phaseId: item.phaseId }))}><Badge value={item.status} /><span className="strong">{item.title}</span><small>{fmt(item.start)} → {fmt(item.due)}</small></button>)}</div></section></div></div>;
+  return <div className="page"><div className="page-narrow"><div className="page-head"><div><div className="eyebrow">Аналитика</div><h1 className="h1">{project.title}</h1></div></div><div className="grid" style={{ gridTemplateColumns: 'repeat(auto-fit,minmax(180px,1fr))' }}><div className="card card-pad compact-card"><div className="eyebrow">Всего задач</div><div className="h1">{items.length}</div></div><div className="card card-pad compact-card"><div className="eyebrow">Выполнено</div><div className="h1">{Math.round(done / total * 100)}%</div></div><div className="card card-pad compact-card"><div className="eyebrow">Риски</div><div className="h1">{risks}</div></div><div className="card card-pad compact-card"><div className="eyebrow">Участники</div><div style={{ display: 'flex', marginTop: 10 }}>{assigned.map(user => <Avatar key={user.id} user={user} />)}</div></div></div><section className="card card-pad compact-card" style={{ marginTop: 14 }}><div className="section-title">Задачи проекта</div><div className="grid compact-grid" style={{ marginTop: 8 }}>{items.map(item => <button type="button" key={item.id} className={`task-click-card compact-card ${route.itemId === item.id ? 'active' : ''}`} onClick={() => openItem(setRoute, item)}><Badge value={item.status} /><span className="strong">{item.title}</span><small>{fmt(item.start)} → {fmt(item.due)}</small></button>)}</div></section></div></div>;
 }

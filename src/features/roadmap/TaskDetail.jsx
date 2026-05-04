@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react';
 import { useApp } from '../../app/AppContext.jsx';
 import { Badge } from '../../shared/ui/Badge.jsx';
 import { Button } from '../../shared/ui/Button.jsx';
-import { Avatar } from '../../shared/ui/Avatar.jsx';
 import { canEditTask, canChangeTaskStatus, canManageSubtasks, isTaskOwnedBy } from '../../services/permissions.js';
 
 const STATUS_OPTIONS = [
@@ -30,12 +29,11 @@ export function TaskDetail({ item }) {
   const canSubtasks = useMemo(() => canManageSubtasks(db, currentUser, item), [db, currentUser, item]);
   const canComment = item && hasPermission('project.comment.create', { projectId: item.projectId });
   const canViewComments = item && hasPermission('project.comment.view', { projectId: item.projectId });
-  const owner = item ? db.users.find(user => user.id === item.ownerId) : null;
   const project = item ? db.projects.find(project => project.id === item.projectId) : null;
   const projectUsers = project ? [...new Set([...(project.access || []).map(entry => entry.userId), ...(db.teams.find(team => team.id === project.teamId)?.members || []).map(member => member.userId)])]
     .map(userId => db.users.find(user => user.id === userId)).filter(user => user && user.platformRole === 'user') : [];
 
-  if (!item) return <aside className="task-detail"><div className="empty"><div><strong>Выберите задачу</strong><span>Детали появятся справа.</span></div></div></aside>;
+  if (!item) return <aside className="task-detail"><div className="empty"><div><strong>Выберите задачу</strong><span>Карточка появится справа.</span></div></div></aside>;
 
   function patch(key, value) {
     if (key === 'status' && !canStatus) return;
@@ -63,31 +61,28 @@ export function TaskDetail({ item }) {
   }
 
   return (
-    <aside className="task-detail">
-      <section className="detail-card detail-hero">
-        <div className="task-detail-kicker">
-          <Badge value={item.type} />
-          <Badge value={item.status} />
-          {isTaskOwnedBy(currentUser, item) ? <span className="badge badge-member">своя</span> : null}
+    <aside className="task-detail task-detail-slide">
+      <section className="detail-card detail-hero compact-card">
+        <button className="detail-close" onClick={() => setRoute(prev => ({ ...prev, itemId: null }))} title="Закрыть">×</button>
+        <div className="task-detail-topline">
+          <div className="task-detail-title-wrap"><div className="small muted">Карточка задачи</div><input className="input detail-title-input" disabled={!canEdit} value={item.title} onChange={e => patch('title', e.target.value)} /></div>
+          <div className="task-detail-statuses"><Badge value={item.type} /><select className={`select status-control status-${item.status}`} disabled={!canStatus} value={item.status} onChange={e => patch('status', e.target.value)}>{STATUS_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>{isTaskOwnedBy(currentUser, item) ? <span className="badge badge-member">своя</span> : null}</div>
         </div>
-        <div className="small muted">Карточка задачи · редактирование доступно согласно роли</div>
       </section>
 
-      <section className="detail-card">
+      <section className="detail-card compact-card">
         <div className="section-title">Основное</div>
-        <label className="field"><span className="label">Ключевые задачи и вехи</span><input className="input" disabled={!canEdit} value={item.title} onChange={e => patch('title', e.target.value)} /></label>
         <label className="field"><span className="label">Результат (Deliverable)</span><input className="input" disabled={!canEdit} value={item.result || ''} onChange={e => patch('result', e.target.value)} /></label>
-        <div className="detail-field-grid">
+        <div className="detail-field-stack">
           <label className="field"><span className="label">Старт</span><input className="input" type="date" disabled={!canEdit} value={item.start || ''} onChange={e => patch('start', e.target.value)} /></label>
           <label className="field"><span className="label">Дедлайн</span><input className="input" type="date" disabled={!canEdit} value={item.due || ''} onChange={e => patch('due', e.target.value)} /></label>
-          <label className="field"><span className="label">Статус</span><select className={`select status-control status-${item.status}`} disabled={!canStatus} value={item.status} onChange={e => patch('status', e.target.value)}>{STATUS_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label>
           <label className="field"><span className="label">Ответственный</span><select className="select" disabled={!canEdit} value={item.ownerId || ''} onChange={e => patch('ownerId', e.target.value)}><option value="">Не назначен</option>{projectUsers.map(user => <option key={user.id} value={user.id}>{user.name}</option>)}</select></label>
         </div>
       </section>
 
-      <section className="detail-card smart-card">
+      <section className="detail-card smart-card compact-card">
         <div className="section-title">SMART-описание</div>
-        <div className="smart-grid">
+        <div className="smart-grid compact-smart-grid">
           {SMART_FIELDS.map(([letter, title, hint], index) => (
             <label className="smart-field" key={letter}>
               <span className="smart-letter">{letter}</span>
@@ -98,13 +93,13 @@ export function TaskDetail({ item }) {
         </div>
       </section>
 
-      <section className="detail-card">
+      <section className="detail-card compact-card">
         <div className="section-title">Подзадачи</div>
         {(item.subtasks || []).map(task => <div className="subtask-row" key={task.id}><input type="checkbox" disabled={!canSubtasks} checked={task.done} onChange={e => updateSubtask(item.id, task.id, { done: e.target.checked })} /><input className="input" style={{ padding: 5 }} disabled={!canSubtasks} value={task.title} onChange={e => updateSubtask(item.id, task.id, { title: e.target.value })} /><input className="input" style={{ padding: 5 }} disabled={!canSubtasks} type="date" value={task.due || ''} onChange={e => updateSubtask(item.id, task.id, { due: e.target.value })} /></div>)}
         {canSubtasks ? <div style={{ display: 'flex', gap: 8 }}><input className="input" value={subtask} placeholder="Новая подзадача" onChange={e => setSubtask(e.target.value)} /><Button size="sm" onClick={submitSubtask}>Добавить</Button></div> : <div className="small muted">Нет прав на изменение подзадач.</div>}
       </section>
 
-      {canViewComments ? <section className="detail-card">
+      {canViewComments ? <section className="detail-card compact-card">
         <div className="section-title">Комментарии</div>
         {(item.comments || []).map(itemComment => {
           const user = db.users.find(entry => entry.id === itemComment.userId);

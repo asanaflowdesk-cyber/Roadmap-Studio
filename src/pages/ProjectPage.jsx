@@ -11,7 +11,7 @@ function ProjectHeaderCard({ project, items }) {
   const done = items.filter(item => item.status === 'done').length;
   const progress = items.length ? Math.round(done / items.length * 100) : 0;
   return (
-    <section className="project-detail-card card">
+    <section className="project-detail-card card compact-card">
       <div className="project-detail-main">
         <div className="eyebrow">Карточка проекта</div>
         <h1 className="h1 project-detail-title">{project.title}</h1>
@@ -30,7 +30,7 @@ export function ProjectPage() {
   const project = projectById(db, route.projectId);
   const phases = useMemo(() => db.phases.filter(phase => phase.projectId === route.projectId).sort((a,b) => a.sort - b.sort), [db, route.projectId]);
   const items = useMemo(() => db.items.filter(item => !item.isArchived && item.projectId === route.projectId), [db, route.projectId]);
-  const selected = db.items.find(item => item.id === route.itemId) || items[0] || null;
+  const selected = db.items.find(item => item.id === route.itemId) || null;
 
   if (!project) return <div className="page"><div className="empty"><div><strong>Проект не найден</strong><span>Вернитесь к списку проектов.</span></div></div></div>;
 

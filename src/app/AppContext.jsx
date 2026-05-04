@@ -136,9 +136,13 @@ export function AppProvider({ children }) {
     const email = payload.email.trim().toLowerCase();
     if (db.users.some(user => user.email.toLowerCase() === email)) return { ok: false, message: 'Пользователь с таким email уже есть.' };
     const platformRole = currentUser.platformRole === 'superadmin' ? payload.platformRole : 'user';
+    const firstName = (payload.firstName || payload.name || '').trim().split(' ')[0] || '';
+    const lastName = (payload.lastName || '').trim();
+    const fullName = (payload.name || [firstName, lastName].filter(Boolean).join(' ')).trim();
+    const initialsBase = [firstName, lastName].filter(Boolean).join(' ') || fullName;
     const user = {
-      id: uid('u'), name: payload.name.trim(), email, password: payload.password || 'demo123',
-      initials: payload.initials || payload.name.split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase(),
+      id: uid('u'), firstName, lastName, name: fullName, email, password: payload.password || 'demo123',
+      initials: payload.initials || initialsBase.split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase(),
       color: payload.color || 'linear-gradient(135deg,#345F7A,#89A9B8)', platformRole, status: 'active'
     };
     setDb(prev => ({ ...prev, users: [...prev.users, user] }), `Создан пользователь ${user.email}`);
@@ -151,6 +155,14 @@ export function AppProvider({ children }) {
     if (currentUser?.id !== userId && !canModifyPlatformUser(currentUser, target, 'edit')) return false;
     const safePatch = { ...patch };
     if (safePatch.platformRole && currentUser?.platformRole !== 'superadmin') delete safePatch.platformRole;
+    const firstName = ('firstName' in safePatch) ? safePatch.firstName : (target?.firstName || (target?.name || '').split(' ').slice(0, 1).join(' '));
+    const lastName = ('lastName' in safePatch) ? safePatch.lastName : (target?.lastName || (target?.name || '').split(' ').slice(1).join(' '));
+    if ('firstName' in safePatch || 'lastName' in safePatch || 'name' in safePatch) {
+      safePatch.firstName = firstName;
+      safePatch.lastName = lastName;
+      safePatch.name = safePatch.name || [firstName, lastName].filter(Boolean).join(' ').trim();
+      safePatch.initials = (safePatch.name || '').split(' ').map(x => x[0]).join('').slice(0, 2).toUpperCase();
+    }
     setDb(prev => ({ ...prev, users: prev.users.map(user => user.id === userId ? { ...user, ...safePatch } : user) }), `Обновлен пользователь ${target?.email || userId}`);
     return true;
   }

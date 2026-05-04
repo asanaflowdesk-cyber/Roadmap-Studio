@@ -19,7 +19,7 @@ export function OverviewPage() {
         <h1 className="h1">Работа по всем доступным проектам</h1>
         <div className="subtitle">{projects.length} проектов · {items.length} задач · {items.length ? Math.round(done / items.length * 100) : 0}% выполнено</div>
       </div>
-      <div className="project-shell">
+      <div className={`project-shell ${selected ? 'has-task-detail' : ''}`}>
         <div style={{ height: 'calc(100% - 24px)' }}><KanbanView items={items} phases={phases} /></div>
         <TaskDetail item={selected} />
       </div>

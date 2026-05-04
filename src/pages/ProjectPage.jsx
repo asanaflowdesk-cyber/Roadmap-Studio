@@ -46,7 +46,7 @@ export function ProjectPage() {
   return (
     <div className="project-detail-layout">
       <ProjectHeaderCard project={project} items={items} />
-      <div className="project-shell">
+      <div className={`project-shell ${selected ? 'has-task-detail' : ''}`}>
         {content}
         <TaskDetail item={selected} />
       </div>

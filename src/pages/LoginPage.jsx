@@ -22,7 +22,7 @@ export function LoginPage() {
         <p className="login-copy">
           Система управления дорожными картами, проектами, ролями и доступами. Регистрации нет: пользователей создает и настраивает администратор.
         </p>
-        <div className="login-features">
+        <div className="login-bubbles" aria-label="Правила доступа">
           <div className="login-feature"><strong>Доступ только по учетной записи</strong><span>Пользователь входит по email и паролю, которые выдали внутри системы.</span></div>
           <div className="login-feature"><strong>Роли управляются централизованно</strong><span>Суперадмин задает матрицу прав, администратор управляет пользователями и командами в рамках разрешений.</span></div>
           <div className="login-feature"><strong>Проекты видны не всем</strong><span>Гость и участник видят только те проекты, куда были явно добавлены.</span></div>
@@ -31,6 +31,7 @@ export function LoginPage() {
 
       <section className="login-panel-wrap">
         <form className="login-panel" onSubmit={submit}>
+          <div className="login-form-pill">Верификация пользователя</div>
           <h1>Вход в систему</h1>
           <div className="login-note">Без самостоятельной регистрации. Доступ выдает администратор.</div>
           {error ? <div className="login-error">{error}</div> : null}

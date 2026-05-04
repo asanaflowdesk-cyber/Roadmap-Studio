@@ -34,7 +34,7 @@ export function SettingsPage() {
     ['templates', 'Шаблоны', hasPermission('template.view')],
     ['notifications', 'Уведомления', hasPermission('notification.manageOwn') || hasPermission('notification.manageGlobal')],
     ['dictionaries', 'Справочники', hasPermission('dictionary.view')],
-    ['audit', 'Аудит', hasPermission('system.audit')],
+    ['audit', 'Аудит действий', hasPermission('system.audit')],
     ['archive', 'Архив', hasPermission('system.archive.view')],
     ['system', 'Система', hasPermission('system.settings')]
   ].filter(([, , visible]) => visible);

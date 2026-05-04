@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useApp } from '../../app/AppContext.jsx';
 import { Badge } from '../../shared/ui/Badge.jsx';
 import { fmt, daysBetween } from '../../shared/utils/date.js';
@@ -7,6 +7,10 @@ import { Button } from '../../shared/ui/Button.jsx';
 
 const statuses = [['new', 'Не начато'], ['progress', 'В работе'], ['approval', 'Согласование'], ['risk', 'Риски'], ['done', 'Готово']];
 const DAY = 86400000;
+
+function toISO(date) {
+  return date.toISOString().slice(0, 10);
+}
 
 function toTime(value) {
   const time = new Date(`${value}T00:00:00`).getTime();
@@ -23,8 +27,8 @@ function monthLabel(date) {
   return date.toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
 }
 
-function openItem(setRoute, item, tabFallback = null) {
-  setRoute(prev => ({ ...prev, ...(tabFallback ? { tab: tabFallback } : {}), itemId: item.id, phaseId: item.phaseId }));
+function openItem(setRoute, item) {
+  setRoute(prev => ({ ...prev, itemId: item.id, phaseId: item.phaseId }));
 }
 
 export function KanbanView({ items, phases }) {
@@ -42,11 +46,15 @@ export function KanbanView({ items, phases }) {
 
 export function GanttView({ project, items, phases }) {
   const { setRoute } = useApp();
+  const gridRef = useRef(null);
   const [collapsed, setCollapsed] = useState({});
+  const todayIso = toISO(new Date());
+  const todayTime = toTime(todayIso);
   const validTimes = items.flatMap(item => [toTime(item.start), toTime(item.due)]).filter(Number.isFinite);
-  const min = validTimes.length ? Math.min(...validTimes) : toTime(new Date().toISOString().slice(0, 10));
-  const max = validTimes.length ? Math.max(...validTimes) : min + 14 * DAY;
+  const min = Math.min(...(validTimes.length ? validTimes : [todayTime]), todayTime);
+  const max = Math.max(...(validTimes.length ? validTimes : [todayTime + 14 * DAY]), todayTime + 14 * DAY);
   const range = Math.max(1, Math.round((max - min) / DAY) + 1);
+  const todayIndex = Math.max(1, Math.round((todayTime - min) / DAY) + 1);
   const days = useMemo(() => Array.from({ length: range }, (_, index) => addDays(min, index)), [min, range]);
   const months = [];
   days.forEach((date, index) => {
@@ -55,6 +63,15 @@ export function GanttView({ project, items, phases }) {
     if (last?.label === label) last.span += 1;
     else months.push({ label, start: index + 1, span: 1 });
   });
+
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      const el = gridRef.current;
+      if (!el) return;
+      const target = Math.max(0, (todayIndex - 12) * 30);
+      el.scrollLeft = target;
+    });
+  }, [todayIndex, range, project?.id]);
 
   function position(item) {
     const start = toTime(item.start) ?? min;
@@ -72,13 +89,16 @@ export function GanttView({ project, items, phases }) {
             <h1>{project?.title || 'Гант'}</h1>
             <p>{project?.desc || 'План-график задач по фазам проекта'}</p>
           </div>
-          <span className="badge badge-task">{items.length} задач</span>
+          <span className="badge badge-task">сегодня · {fmt(todayIso)}</span>
         </div>
-        <div className="gantt-grid" style={{ '--day-count': range }}>
+        <div className="gantt-grid" ref={gridRef} style={{ '--day-count': range, '--today-column': todayIndex }}>
           <div className="gantt-left gantt-corner">Задачи</div>
           <div className="gantt-months">{months.map(month => <div key={`${month.label}-${month.start}`} style={{ gridColumn: `${month.start} / span ${month.span}` }}>{month.label}</div>)}</div>
           <div className="gantt-left gantt-days-label" />
-          <div className="gantt-days">{days.map(day => <div key={day.toISOString()}>{day.getDate()}</div>)}</div>
+          <div className="gantt-days">{days.map(day => {
+            const iso = toISO(day);
+            return <div key={iso} className={iso === todayIso ? 'gantt-today-day' : ''}><span>{day.getDate()}</span></div>;
+          })}</div>
 
           {phases.map((phase, phaseIndex) => {
             const phaseItems = items.filter(item => item.phaseId === phase.id);
@@ -91,11 +111,11 @@ export function GanttView({ project, items, phases }) {
                   <strong>Фаза {phaseIndex + 1} · {phase.title}</strong>
                   <em>{phaseItems.length} задач · {phaseItems.length ? Math.round(done / phaseItems.length * 100) : 0}%</em>
                 </button>
-                <div className="gantt-phase-line" />
+                <div className="gantt-phase-line"><div className="gantt-today-line" style={{ gridColumn: `${todayIndex} / span 1` }} /></div>
                 {!isCollapsed && phaseItems.map(item => (
                   <React.Fragment key={item.id}>
                     <button className="gantt-left gantt-task-title" onClick={() => openItem(setRoute, item)}><span className={`dot ${item.type === 'risk' ? 'dot-risk' : item.type === 'milestone' ? 'dot-milestone' : item.status === 'done' ? 'dot-done' : ''}`} /><span>{item.title}</span></button>
-                    <div className="gantt-track"><div className={`gantt-task-bar gantt-task-${item.type} ${item.status === 'done' ? 'done' : ''}`} style={position(item)} title={`${item.title}: ${fmt(item.start)} → ${fmt(item.due)}`}><span>{daysBetween(item.start, item.due)} дн.</span></div></div>
+                    <div className="gantt-track"><div className="gantt-today-line" style={{ gridColumn: `${todayIndex} / span 1` }} /><div className={`gantt-task-bar gantt-task-${item.type} ${item.status === 'done' ? 'done' : ''}`} style={position(item)} title={`${item.title}: ${fmt(item.start)} → ${fmt(item.due)}`}><span>{daysBetween(item.start, item.due)} дн.</span></div></div>
                   </React.Fragment>
                 ))}
               </React.Fragment>
@@ -116,6 +136,7 @@ export function CalendarView({ items }) {
   const { setRoute, route } = useApp();
   const [currentMonth, setCurrentMonth] = useState(() => new Date());
   const today = new Date();
+  const todayIso = toISO(today);
   const monthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
   const monthEnd = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0);
   const start = new Date(monthStart);
@@ -124,20 +145,29 @@ export function CalendarView({ items }) {
   end.setDate(monthEnd.getDate() + (6 - ((monthEnd.getDay() + 6) % 7)));
   const days = [];
   for (let d = new Date(start); d <= end; d = addDays(d, 1)) days.push(new Date(d));
+
   const byDate = items.reduce((acc, item) => {
-    const key = item.due || item.start;
-    if (!key) return acc;
-    (acc[key] ||= []).push(item);
+    const startTime = toTime(item.start || item.due);
+    const dueTime = toTime(item.due || item.start);
+    if (!Number.isFinite(startTime) || !Number.isFinite(dueTime)) return acc;
+    const a = Math.min(startTime, dueTime);
+    const b = Math.max(startTime, dueTime);
+    for (let t = a; t <= b; t += DAY) {
+      const key = toISO(new Date(t));
+      (acc[key] ||= []).push(item);
+    }
     return acc;
   }, {});
 
-  return <div className="page"><div className="calendar-card card compact-card"><div className="calendar-head"><Button size="sm" variant="ghost" onClick={() => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}>‹</Button><div className="calendar-head-title">{monthLabel(monthStart)}</div><div className="calendar-head-actions"><Button size="sm" variant="ghost" onClick={() => setCurrentMonth(new Date())}>Сегодня</Button><Button size="sm" variant="ghost" onClick={() => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}>›</Button></div></div><div className="calendar-weekdays">{['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(day => <div key={day}>{day}</div>)}</div><div className="calendar-grid">{days.map(day => {
-    const key = day.toISOString().slice(0, 10);
+  const visibleCount = days.reduce((sum, day) => sum + (byDate[toISO(day)] || []).length, 0);
+
+  return <div className="page calendar-page"><div className="calendar-card card compact-card"><div className="calendar-head"><Button size="sm" variant="ghost" onClick={() => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1))}>‹</Button><div><div className="calendar-head-title">{monthLabel(monthStart)}</div><div className="small muted">Сегодня: {fmt(todayIso)} · задач в видимом месяце: {visibleCount}</div></div><div className="calendar-head-actions"><Button size="sm" variant="ghost" onClick={() => setCurrentMonth(new Date())}>Сегодня</Button><Button size="sm" variant="ghost" onClick={() => setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1))}>›</Button></div></div><div className="calendar-weekdays">{['Пн','Вт','Ср','Чт','Пт','Сб','Вс'].map(day => <div key={day}>{day}</div>)}</div><div className="calendar-grid">{days.map(day => {
+    const key = toISO(day);
     const dayItems = byDate[key] || [];
-    const isToday = key === today.toISOString().slice(0, 10);
+    const isToday = key === todayIso;
     const inMonth = day.getMonth() === currentMonth.getMonth();
-    return <div key={key} className={`calendar-cell ${isToday ? 'today' : ''} ${inMonth ? '' : 'muted-month'}`}><div className="calendar-date">{day.getDate()}</div><div className="calendar-list">{dayItems.slice(0,3).map(item => <button type="button" key={item.id} className={`calendar-item status-${item.status} ${route.itemId === item.id ? 'active' : ''}`} onClick={() => openItem(setRoute, item)}>{item.title}</button>)}{dayItems.length > 3 ? <div className="calendar-more">+{dayItems.length - 3} ещё</div> : null}</div></div>;
-  })}</div></div></div>;
+    return <div key={key} className={`calendar-cell ${isToday ? 'today' : ''} ${inMonth ? '' : 'muted-month'}`}><div className="calendar-date">{day.getDate()}</div><div className="calendar-list">{dayItems.slice(0,4).map(item => <button type="button" key={`${key}-${item.id}`} className={`calendar-item status-${item.status} ${route.itemId === item.id ? 'active' : ''}`} onClick={() => openItem(setRoute, item)}>{item.title}</button>)}{dayItems.length > 4 ? <div className="calendar-more">+{dayItems.length - 4} ещё</div> : null}</div></div>;
+  })}</div>{visibleCount === 0 && items.length > 0 ? <div className="calendar-empty-note">В этом месяце задач нет. Используйте стрелки месяца или кнопку “Сегодня”.</div> : null}</div></div>;
 }
 
 export function AnalyticsView({ project, items, db }) {

@@ -679,3 +679,119 @@ input, select, textarea { color: var(--ink); }
   .calendar-cell { min-height: 90px; }
   .notify-toast { left: 12px; right: 12px; width: auto; }
 }
+
+/* final UX fixes: scroll, compact task header, calendar/Gantt, users, audit */
+.project-detail-layout {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 10px;
+}
+.project-detail-layout .project-shell {
+  height: 100%;
+  min-height: 0;
+  margin-top: 0;
+  align-items: stretch;
+  overflow: hidden;
+}
+.project-detail-layout .task-detail,
+.task-detail-slide {
+  height: 100%;
+  min-height: 0;
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px;
+}
+.task-compact-hero { padding: 10px 42px 10px 10px; }
+.task-compact-head { display: grid; gap: 7px; }
+.detail-title-input {
+  font-size: 18px;
+  line-height: 1.15;
+  font-family: Forum, serif;
+  min-height: 26px;
+}
+.status-pill-select {
+  height: 22px;
+  min-width: 94px;
+  max-width: 132px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 22px 0 9px;
+  font-size: 10px;
+  font-weight: 900;
+  outline: 0;
+  appearance: auto;
+  cursor: pointer;
+}
+.status-pill-select.status-new { background: var(--accent-soft); color: var(--accent); }
+.status-pill-select.status-progress { background: var(--green-soft); color: var(--green); }
+.status-pill-select.status-approval { background: var(--amber-soft); color: var(--amber); }
+.status-pill-select.status-risk { background: var(--red-soft); color: var(--red); }
+.status-pill-select.status-done { background: var(--green-soft); color: var(--green); }
+.detail-close { top: 8px; right: 8px; }
+.detail-field-stack .field { margin-bottom: 0; }
+.detail-card.compact-card { padding: 10px; }
+.smart-field { grid-template-columns: 22px minmax(0,1fr); }
+.smart-field .textarea { grid-column: 1 / -1; }
+
+.gantt-grid { position: relative; scroll-behavior: smooth; }
+.gantt-days .gantt-today-day { position: relative; color: white; font-weight: 900; }
+.gantt-days .gantt-today-day span {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: var(--accent);
+  color: white;
+}
+.gantt-phase-line,
+.gantt-track { position: relative; display: grid; grid-template-columns: repeat(var(--day-count), 30px); }
+.gantt-today-line {
+  width: 2px;
+  height: 100%;
+  align-self: stretch;
+  justify-self: center;
+  background: rgba(189,75,69,.55);
+  z-index: 2;
+  pointer-events: none;
+}
+.gantt-task-bar { z-index: 3; }
+
+.calendar-page { padding: 12px; }
+.calendar-card { height: 100%; display: grid; grid-template-rows: auto auto minmax(0,1fr) auto; }
+.calendar-grid { min-height: 0; overflow: auto; }
+.calendar-cell { min-height: 104px; }
+.calendar-empty-note {
+  margin-top: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 10px 12px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  background: var(--surface-soft);
+}
+
+.users-edit-row { padding: 8px 10px; gap: 8px; }
+.users-edit-main { gap: 6px; }
+.users-edit-main .field,
+.users-name-grid .field { margin-bottom: 0; }
+.users-edit-main .input,
+.users-edit-main .select,
+.users-name-grid .input { height: 30px; padding: 5px 8px; font-size: 12px; border-radius: 9px; }
+.users-name-grid { gap: 6px; }
+.users-actions .btn { height: 26px; padding: 0 8px; }
+.compact-table-card .table-head { padding: 8px 10px; }
+.compact-table-card .table-row { padding: 8px 10px; }
+
+.audit-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.audit-table .table-row { min-height: 42px; }
+.audit-meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+@media (max-width: 980px) {
+  .project-detail-layout .task-detail { display: none; }
+  .calendar-card { height: auto; }
+}

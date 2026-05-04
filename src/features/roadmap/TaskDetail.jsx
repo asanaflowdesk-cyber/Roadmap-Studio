@@ -62,11 +62,15 @@ export function TaskDetail({ item }) {
 
   return (
     <aside className="task-detail task-detail-slide">
-      <section className="detail-card detail-hero compact-card">
+      <section className="detail-card detail-hero compact-card task-compact-hero">
         <button className="detail-close" onClick={() => setRoute(prev => ({ ...prev, itemId: null }))} title="Закрыть">×</button>
-        <div className="task-detail-topline">
-          <div className="task-detail-title-wrap"><div className="small muted">Карточка задачи</div><input className="input detail-title-input" disabled={!canEdit} value={item.title} onChange={e => patch('title', e.target.value)} /></div>
-          <div className="task-detail-statuses"><Badge value={item.type} /><select className={`select status-control status-${item.status}`} disabled={!canStatus} value={item.status} onChange={e => patch('status', e.target.value)}>{STATUS_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>{isTaskOwnedBy(currentUser, item) ? <span className="badge badge-member">своя</span> : null}</div>
+        <div className="task-compact-head">
+          <input className="input detail-title-input" disabled={!canEdit} value={item.title} onChange={e => patch('title', e.target.value)} />
+          <div className="task-detail-statuses">
+            <Badge value={item.type} />
+            <select className={`status-pill-select status-${item.status}`} disabled={!canStatus} value={item.status} onChange={e => patch('status', e.target.value)}>{STATUS_OPTIONS.map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select>
+            {isTaskOwnedBy(currentUser, item) ? <span className="badge badge-member">своя</span> : null}
+          </div>
         </div>
       </section>
 

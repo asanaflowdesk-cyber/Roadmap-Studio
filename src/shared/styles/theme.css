@@ -838,3 +838,99 @@ input, select, textarea { color: var(--ink); }
   .users-one-line-head, .users-one-line-row { grid-template-columns: 34px 1fr 1fr !important; }
   .users-one-line-head div:nth-child(n+4), .users-one-line-row > *:nth-child(n+4) { display: none; }
 }
+
+/* gantt freeze fix: scalable periods instead of thousands of daily columns */
+.gantt-page { height: 100%; overflow: auto; padding: 12px; }
+.gantt-compact-card { min-width: 0; max-width: 100%; }
+.gantt-fine-grid {
+  display: grid;
+  grid-template-columns: 250px repeat(var(--day-count), var(--gantt-unit-width, 22px));
+  overflow: auto;
+  position: relative;
+  max-height: calc(100vh - 210px);
+}
+.gantt-fine-grid .gantt-months,
+.gantt-fine-grid .gantt-days,
+.gantt-fine-grid .gantt-track,
+.gantt-fine-grid .gantt-phase-line {
+  grid-template-columns: repeat(var(--day-count), var(--gantt-unit-width, 22px));
+}
+.gantt-fine-grid .gantt-left { position: sticky; left: 0; z-index: 6; }
+.gantt-fine-grid .gantt-corner,
+.gantt-fine-grid .gantt-days-label { z-index: 8; }
+.gantt-fine-grid .gantt-months,
+.gantt-fine-grid .gantt-days { z-index: 1; }
+.gantt-fine-grid .gantt-days > div { height: 24px; font-size: 8.5px; }
+.gantt-fine-grid .gantt-months > div { padding: 5px 7px; font-size: 10px; }
+.gantt-fine-grid .gantt-task-title { min-height: 30px; background: var(--surface); }
+.gantt-fine-grid .gantt-track { min-height: 30px; }
+.gantt-fine-grid .gantt-phase { min-height: 32px; background: var(--surface-deep); }
+.gantt-fine-grid .gantt-phase-line { min-height: 32px; }
+.gantt-fine-grid .gantt-task-bar { height: 15px; font-size: 9px; border-radius: 6px; padding: 0 5px; }
+.gantt-fine-grid .gantt-days span { width: auto; min-width: 14px; height: 14px; border-radius: 999px; }
+
+/* scale controls for Gantt / Calendar */
+.view-scale-toolbar {
+  display: flex;
+  align-items: end;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+.scale-field { margin-bottom: 0; min-width: 118px; }
+.scale-field .input,
+.scale-field .select { height: 30px; padding: 5px 9px; font-size: 12px; border-radius: 10px; }
+.gantt-toolbar-titlebar { align-items: end; }
+.gantt-toolbar-titlebar h1 { font-size: 24px; }
+.gantt-toolbar-titlebar p { font-size: 11px; }
+.gantt-fine-grid .gantt-days > div { height: 24px; font-size: 8.5px; overflow: hidden; }
+.gantt-fine-grid .gantt-days span { white-space: nowrap; }
+.gantt-fine-grid .gantt-months > div { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.gantt-fine-grid .gantt-task-bar span:empty { display: none; }
+
+.calendar-head { align-items: end; }
+.calendar-head-actions .field { margin-bottom: 0; }
+.calendar-cell-day { min-height: 390px; }
+.calendar-cell-week { min-height: 260px; }
+.calendar-cell-decade { min-height: 220px; }
+.calendar-cell-quarter { min-height: 88px; }
+.calendar-year-grid {
+  min-height: 0;
+  overflow: auto;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 10px;
+}
+.calendar-month-card {
+  min-height: 140px;
+  padding: 10px;
+  background: var(--surface-soft);
+  border: 1px solid var(--line-soft);
+  border-radius: 14px;
+}
+.calendar-month-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: capitalize;
+  margin-bottom: 8px;
+}
+.calendar-month-title span {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 10px;
+}
+@media (max-width: 1100px) {
+  .gantt-toolbar-titlebar { align-items: stretch; flex-direction: column; }
+  .view-scale-toolbar { justify-content: flex-start; }
+  .calendar-head { align-items: stretch; flex-direction: column; }
+  .calendar-year-grid { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+}

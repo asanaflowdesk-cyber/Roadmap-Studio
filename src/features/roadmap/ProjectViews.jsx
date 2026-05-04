@@ -48,13 +48,13 @@ export function GanttView({ project, items, phases }) {
   const { setRoute } = useApp();
   const gridRef = useRef(null);
   const [collapsed, setCollapsed] = useState({});
-  const todayIso = toISO(new Date());
-  const todayTime = toTime(todayIso);
-  const validTimes = items.flatMap(item => [toTime(item.start), toTime(item.due)]).filter(Number.isFinite);
-  const min = Math.min(...(validTimes.length ? validTimes : [todayTime]), todayTime);
-  const max = Math.max(...(validTimes.length ? validTimes : [todayTime + 14 * DAY]), todayTime + 14 * DAY);
+  const projectTimes = [toTime(project?.start), toTime(project?.due)].filter(Number.isFinite);
+  const itemTimes = items.flatMap(item => [toTime(item.start), toTime(item.due)]).filter(Number.isFinite);
+  const allTimes = [...projectTimes, ...itemTimes];
+  const fallback = toTime(new Date().toISOString().slice(0, 10));
+  const min = allTimes.length ? Math.min(...allTimes) : fallback;
+  const max = allTimes.length ? Math.max(...allTimes) : fallback + 14 * DAY;
   const range = Math.max(1, Math.round((max - min) / DAY) + 1);
-  const todayIndex = Math.max(1, Math.round((todayTime - min) / DAY) + 1);
   const days = useMemo(() => Array.from({ length: range }, (_, index) => addDays(min, index)), [min, range]);
   const months = [];
   days.forEach((date, index) => {
@@ -67,11 +67,9 @@ export function GanttView({ project, items, phases }) {
   useEffect(() => {
     requestAnimationFrame(() => {
       const el = gridRef.current;
-      if (!el) return;
-      const target = Math.max(0, (todayIndex - 12) * 30);
-      el.scrollLeft = target;
+      if (el) el.scrollLeft = 0;
     });
-  }, [todayIndex, range, project?.id]);
+  }, [project?.id, range]);
 
   function position(item) {
     const start = toTime(item.start) ?? min;
@@ -83,22 +81,19 @@ export function GanttView({ project, items, phases }) {
 
   return (
     <div className="gantt-page">
-      <div className="gantt-card">
-        <div className="gantt-titlebar">
+      <div className="gantt-card gantt-compact-card">
+        <div className="gantt-titlebar compact-card">
           <div>
             <h1>{project?.title || 'Гант'}</h1>
-            <p>{project?.desc || 'План-график задач по фазам проекта'}</p>
+            <p>Диапазон проекта: {fmt(days[0] ? toISO(days[0]) : project?.start)} → {fmt(days[days.length - 1] ? toISO(days[days.length - 1]) : project?.due)}</p>
           </div>
-          <span className="badge badge-task">сегодня · {fmt(todayIso)}</span>
+          <span className="badge badge-task">{range} дней</span>
         </div>
-        <div className="gantt-grid" ref={gridRef} style={{ '--day-count': range, '--today-column': todayIndex }}>
+        <div className="gantt-grid gantt-fine-grid" ref={gridRef} style={{ '--day-count': range }}>
           <div className="gantt-left gantt-corner">Задачи</div>
           <div className="gantt-months">{months.map(month => <div key={`${month.label}-${month.start}`} style={{ gridColumn: `${month.start} / span ${month.span}` }}>{month.label}</div>)}</div>
           <div className="gantt-left gantt-days-label" />
-          <div className="gantt-days">{days.map(day => {
-            const iso = toISO(day);
-            return <div key={iso} className={iso === todayIso ? 'gantt-today-day' : ''}><span>{day.getDate()}</span></div>;
-          })}</div>
+          <div className="gantt-days">{days.map(day => <div key={toISO(day)}><span>{day.getDate()}</span></div>)}</div>
 
           {phases.map((phase, phaseIndex) => {
             const phaseItems = items.filter(item => item.phaseId === phase.id);
@@ -111,11 +106,11 @@ export function GanttView({ project, items, phases }) {
                   <strong>Фаза {phaseIndex + 1} · {phase.title}</strong>
                   <em>{phaseItems.length} задач · {phaseItems.length ? Math.round(done / phaseItems.length * 100) : 0}%</em>
                 </button>
-                <div className="gantt-phase-line"><div className="gantt-today-line" style={{ gridColumn: `${todayIndex} / span 1` }} /></div>
+                <div className="gantt-phase-line" />
                 {!isCollapsed && phaseItems.map(item => (
                   <React.Fragment key={item.id}>
                     <button className="gantt-left gantt-task-title" onClick={() => openItem(setRoute, item)}><span className={`dot ${item.type === 'risk' ? 'dot-risk' : item.type === 'milestone' ? 'dot-milestone' : item.status === 'done' ? 'dot-done' : ''}`} /><span>{item.title}</span></button>
-                    <div className="gantt-track"><div className="gantt-today-line" style={{ gridColumn: `${todayIndex} / span 1` }} /><div className={`gantt-task-bar gantt-task-${item.type} ${item.status === 'done' ? 'done' : ''}`} style={position(item)} title={`${item.title}: ${fmt(item.start)} → ${fmt(item.due)}`}><span>{daysBetween(item.start, item.due)} дн.</span></div></div>
+                    <div className="gantt-track"><div className={`gantt-task-bar gantt-task-${item.type} ${item.status === 'done' ? 'done' : ''}`} style={position(item)} title={`${item.title}: ${fmt(item.start)} → ${fmt(item.due)}`}><span>{daysBetween(item.start, item.due)} дн.</span></div></div>
                   </React.Fragment>
                 ))}
               </React.Fragment>

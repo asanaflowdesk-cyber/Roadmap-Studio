@@ -12,12 +12,82 @@ function addDays(dateString, days = 0) {
   return date.toISOString().slice(0, 10);
 }
 
-function addAudit(db, currentUser, action, meta = {}) {
+const AUDIT_TABLES = [
+  ['users', 'Пользователь', ['name', 'email']],
+  ['teams', 'Команда', ['name']],
+  ['projects', 'Проект', ['title']],
+  ['phases', 'Фаза', ['title']],
+  ['items', 'Задача', ['title']],
+  ['projectTemplates', 'Шаблон', ['title']],
+  ['templatePhases', 'Фаза шаблона', ['title']],
+  ['templateItems', 'Задача шаблона', ['title']],
+  ['dictionaryItems', 'Элемент справочника', ['title', 'code']],
+  ['notificationRules', 'Правило уведомления', ['title', 'eventCode']]
+];
+
+const FIELD_LABELS = {
+  title: 'Название', name: 'Имя', firstName: 'Имя', lastName: 'Фамилия', email: 'Email', password: 'Пароль',
+  platformRole: 'Роль платформы', status: 'Статус', role: 'Роль', projectRole: 'Роль проекта', teamRole: 'Роль команды',
+  start: 'Старт', due: 'Дедлайн', startDate: 'Старт проекта', dueDate: 'Дедлайн проекта', ownerId: 'Ответственный',
+  result: 'Deliverable', desc: 'Описание', category: 'Категория', isArchived: 'Архив', isActive: 'Активен',
+  sort: 'Порядок', durationDays: 'Длительность', relativeStartDay: 'Старт +', relativeDueDay: 'Срок +',
+  permission: 'Право', isRead: 'Прочитано', readAt: 'Дата прочтения'
+};
+
+function titleOf(record, keys = []) {
+  if (!record) return '—';
+  for (const key of keys) if (record[key]) return record[key];
+  return record.title || record.name || record.email || record.id || '—';
+}
+
+function valueForAudit(db, key, value) {
+  if (value === null || value === undefined || value === '') return '—';
+  if (key === 'ownerId' || key === 'userId' || key === 'createdBy' || key === 'updatedBy') return db.users?.find(user => user.id === value)?.name || value;
+  if (key === 'projectId') return db.projects?.find(project => project.id === value)?.title || value;
+  if (key === 'teamId') return db.teams?.find(team => team.id === value)?.name || value;
+  if (typeof value === 'boolean') return value ? 'Да' : 'Нет';
+  if (Array.isArray(value)) return value.length ? `${value.length} элементов` : '—';
+  if (typeof value === 'object') return 'изменено';
+  return String(value);
+}
+
+function buildAuditMeta(beforeDb, afterDb, action, meta = {}) {
+  const changes = [];
+  for (const [table, entityLabel, titleKeys] of AUDIT_TABLES) {
+    const before = new Map((beforeDb[table] || []).map(item => [item.id, item]));
+    const after = new Map((afterDb[table] || []).map(item => [item.id, item]));
+    after.forEach((next, id) => {
+      const prev = before.get(id);
+      if (!prev) {
+        changes.push({ type: 'create', table, entityLabel, entityId: id, title: titleOf(next, titleKeys), fields: [] });
+        return;
+      }
+      const fields = Object.keys(next).filter(key => JSON.stringify(prev[key]) !== JSON.stringify(next[key]) && key !== 'updatedAt').map(key => ({
+        key,
+        label: FIELD_LABELS[key] || key,
+        before: valueForAudit(beforeDb, key, prev[key]),
+        after: valueForAudit(afterDb, key, next[key])
+      }));
+      if (fields.length) changes.push({ type: 'update', table, entityLabel, entityId: id, title: titleOf(next, titleKeys), fields });
+    });
+    before.forEach((prev, id) => {
+      if (!after.has(id)) changes.push({ type: 'delete', table, entityLabel, entityId: id, title: titleOf(prev, titleKeys), fields: [] });
+    });
+  }
+  const main = changes[0];
+  const summary = main
+    ? `${main.entityLabel}: ${main.title}${main.fields?.length ? ` · ${main.fields.map(field => `${field.label}: ${field.before} → ${field.after}`).join('; ')}` : ''}`
+    : (meta.summary || 'Изменение сохранено');
+  return { ...meta, summary, changes };
+}
+
+function addAudit(beforeDb, afterDb, currentUser, action, meta = {}) {
+  const auditMeta = buildAuditMeta(beforeDb, afterDb, action, meta);
   return {
-    ...db,
+    ...afterDb,
     audit: [
-      { id: uid('audit'), date: today(), userId: currentUser?.id || 'system', action, meta },
-      ...(db.audit || [])
+      { id: uid('audit'), date: new Date().toISOString(), userId: currentUser?.id || 'system', action, meta: auditMeta },
+      ...(afterDb.audit || [])
     ].slice(0, 500)
   };
 }
@@ -59,7 +129,7 @@ export function AppProvider({ children }) {
   function setDb(updater, auditAction = null, auditMeta = {}) {
     setDbState(prev => {
       const nextBase = typeof updater === 'function' ? updater(prev) : updater;
-      const next = auditAction ? addAudit(nextBase, currentUser, auditAction, auditMeta) : nextBase;
+      const next = auditAction ? addAudit(prev, nextBase, currentUser, auditAction, auditMeta) : nextBase;
       saveData(next);
       return next;
     });

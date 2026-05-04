@@ -454,3 +454,108 @@ input, select, textarea { color: var(--ink); }
   border-color:rgba(42,119,177,.42);
   box-shadow:0 0 0 3px rgba(42,119,177,.10);
 }
+
+/* Refinements: editable status only inside cards, side panel on every project view */
+.btn-primary:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-color: rgba(36,91,143,.22);
+}
+
+.project-detail-layout {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0,1fr);
+  background: var(--surface-soft);
+}
+.project-detail-card {
+  margin: 12px 14px 0;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+}
+.project-detail-main { min-width: 0; }
+.project-detail-title { font-size: 26px; margin: 2px 0 4px; }
+.project-detail-side { display: grid; justify-items: end; gap: 6px; min-width: 180px; }
+.project-detail-layout .project-shell { border-top: 0; margin-top: 10px; min-height: 0; }
+
+.project-status-editor { display: inline-flex; align-items: center; gap: 7px; max-width: 100%; }
+.project-status-editor.compact { max-width: 190px; }
+.project-status-editor.compact .btn { height: 24px; padding: 0 8px; font-size: 10px; }
+.project-card-top { align-items: flex-start; }
+.project-card .project-status-editor { min-height: 28px; }
+
+.status-control {
+  min-width: 126px;
+  height: 30px;
+  border-radius: 999px;
+  padding: 0 28px 0 10px;
+  font-size: 11px;
+  font-weight: 900;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--line);
+}
+.status-new { background: #dcecf7; color: #245b8f; border-color: rgba(36,91,143,.18); }
+.status-progress { background: #e2f2ee; color: #1d7c6f; border-color: rgba(29,124,111,.18); }
+.status-approval { background: #fff2db; color: #9a681d; border-color: rgba(183,123,45,.18); }
+.status-risk { background: #fae9e7; color: #bd4b45; border-color: rgba(189,75,69,.18); }
+.status-done { background: #e2f2ee; color: #1d7c6f; border-color: rgba(29,124,111,.22); }
+.status-control:disabled { opacity: .8; cursor: not-allowed; }
+
+.detail-hero { gap: 7px; }
+.task-detail-kicker { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 6px; }
+.detail-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.smart-card { background: linear-gradient(180deg,#fff,var(--surface-soft)); }
+.smart-grid { display: grid; gap: 8px; }
+.smart-field { display: grid; grid-template-columns: 28px minmax(0,1fr); gap: 8px; align-items: start; }
+.smart-letter { width: 24px; height: 24px; border-radius: 8px; display: inline-grid; place-items: center; background: var(--accent); color: #fff; font-size: 10px; font-weight: 900; }
+.smart-meta { display: grid; gap: 2px; color: var(--ink); font-size: 11px; font-weight: 900; }
+.smart-meta small { color: var(--muted); font-weight: 700; }
+.smart-textarea { grid-column: 2; min-height: 46px; }
+
+.task-click-card {
+  text-align: left;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 14px;
+  padding: 11px 12px;
+  display: grid;
+  gap: 6px;
+  cursor: pointer;
+}
+.task-click-card:hover, .task-click-card.active {
+  background: var(--accent-soft);
+  border-color: rgba(36,91,143,.28);
+}
+.gantt-task-title {
+  cursor: pointer;
+  border: 0;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line-soft);
+}
+.gantt-task-title:hover { background: var(--accent-soft); }
+
+/* Compact templates settings */
+.templates-settings { grid-template-columns: 250px minmax(0,1fr); align-items: start; }
+.templates-settings .side-list { align-content: start; }
+.template-create-card { padding: 12px; }
+.template-create-inline { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 7px; align-items: center; }
+.templates-settings .side-item { padding: 8px 10px; border-radius: 11px; font-size: 12px; min-height: 48px; }
+.templates-settings .card-pad { padding: 14px; }
+.templates-settings .page-head { margin-bottom: 6px; }
+.templates-settings .h1 { font-size: 24px !important; }
+.templates-settings .textarea { min-height: 62px; }
+.template-phase { padding: 10px; margin-top: 10px; }
+.template-phase-head { grid-template-columns: minmax(0,1fr) 96px auto; }
+
+@media (max-width: 980px) {
+  .project-detail-layout { display: block; overflow: auto; }
+  .project-detail-card { margin: 10px; align-items: flex-start; flex-direction: column; }
+  .project-detail-side { justify-items: start; }
+  .detail-field-grid { grid-template-columns: 1fr; }
+}

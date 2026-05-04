@@ -1,7 +1,7 @@
 import React from 'react';
 import { useApp } from '../../app/AppContext.jsx';
-import { Badge } from '../../shared/ui/Badge.jsx';
 import { Avatar } from '../../shared/ui/Avatar.jsx';
+import { ProjectStatusEditor } from './ProjectStatusEditor.jsx';
 
 export function ProjectCard({ project }) {
   const { db, setRoute } = useApp();
@@ -26,7 +26,7 @@ export function ProjectCard({ project }) {
       }))}
     >
       <div className="project-card-top">
-        <Badge value={project.status} />
+        <ProjectStatusEditor project={project} compact />
         {project.horizon ? <span className="project-horizon">{project.horizon}</span> : null}
       </div>
       <div className="project-title">{project.title}</div>

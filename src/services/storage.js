@@ -1,7 +1,7 @@
 import { SEED_DATA } from '../data/seed.js';
 import { DEFAULT_ROLE_PERMISSIONS, permissionKeys } from '../data/permissions.js';
 
-export const STORAGE_KEY = 'roadmap_studio_app_v2';
+export const STORAGE_KEY = 'roadmap_studio_app_v3';
 export const SESSION_KEY = 'roadmap_studio_session_user_id';
 
 function clone(value) {

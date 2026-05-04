@@ -9,6 +9,11 @@ const roles = [
 export function NotificationSettings() {
   const { db, patchNotificationRule, hasPermission } = useApp();
   const canGlobal = hasPermission('notification.manageGlobal');
+  const deliveryRows = (db.notificationDeliveryLog || []).slice(0, 40).map(row => ({
+    ...row,
+    notification: (db.notifications || []).find(n => n.id === row.notificationId)
+  }));
+
   return <div className="grid">
     <div className="card card-pad">
       <div className="section-title">Глобальные правила уведомлений</div>
@@ -27,11 +32,17 @@ export function NotificationSettings() {
         </div>)}
       </div>
     </div>
-    <div className="card card-pad"><div className="section-title">Журнал доставки</div>
-      <div className="small muted">Показывает, какие in-app уведомления были созданы системой.</div>
+    <div className="card card-pad"><div className="section-title">Журнал доставки и прочтения</div>
+      <div className="small muted">Лог фиксирует созданные in-app уведомления. Статус прочтения меняется сразу после открытия уведомления в колокольчике. Между устройствами realtime появится после подключения Supabase Realtime.</div>
       <div className="table-card" style={{ marginTop: 10 }}>
-        <div className="table-head" style={{ gridTemplateColumns: '180px 130px 100px minmax(0,1fr)' }}><div>Дата</div><div>Пользователь</div><div>Канал</div><div>Статус</div></div>
-        {(db.notificationDeliveryLog || []).slice(0, 30).map(row => <div key={row.id} className="table-row" style={{ gridTemplateColumns: '180px 130px 100px minmax(0,1fr)' }}><div>{new Date(row.sentAt).toLocaleString('ru-RU')}</div><div>{db.users.find(u => u.id === row.userId)?.name || row.userId}</div><div>{row.channel}</div><div>{row.status}</div></div>)}
+        <div className="table-head" style={{ gridTemplateColumns: '150px 140px 110px 110px minmax(0,1fr)' }}><div>Создано</div><div>Пользователь</div><div>Канал</div><div>Статус</div><div>Прочитано / Событие</div></div>
+        {deliveryRows.map(row => <div key={row.id} className="table-row" style={{ gridTemplateColumns: '150px 140px 110px 110px minmax(0,1fr)' }}>
+          <div>{new Date(row.sentAt).toLocaleString('ru-RU')}</div>
+          <div>{db.users.find(u => u.id === row.userId)?.name || row.userId}</div>
+          <div>{row.channel}</div>
+          <div><span className={`badge ${row.status === 'read' ? 'badge-done' : 'badge-task'}`}>{row.status === 'read' ? 'Прочитано' : 'Создано'}</span></div>
+          <div><span>{row.readAt ? new Date(row.readAt).toLocaleString('ru-RU') : '—'}</span><div className="small muted">{row.notification?.title || row.notificationId}</div></div>
+        </div>)}
       </div>
     </div>
   </div>;

@@ -6,8 +6,7 @@ import { CreateProjectModal } from '../features/projects/CreateProjectModal.jsx'
 
 function roleForTeam(currentUser, team) {
   if (!currentUser) return '—';
-  if (currentUser.platformRole === 'superadmin') return 'Супер';
-  if (currentUser.platformRole === 'admin') return 'Адм';
+  if (['superadmin', 'admin'].includes(currentUser.platformRole)) return '';
   const member = team.members?.find(item => item.userId === currentUser.id);
   if (member?.role === 'teamLead') return 'Руководитель';
   if (member?.role === 'projectManager') return 'Менеджер';
@@ -102,7 +101,7 @@ export function ProjectsPage() {
                 <div className="team-square" style={{ background: team.color }}>{teamInitials(team.name)}</div>
                 <div className="team-row-name">{team.name}</div>
                 <div className="team-row-count">{visibleCount} проектов</div>
-                <span className="team-role-chip">{roleForTeam(currentUser, team)}</span>
+                {roleForTeam(currentUser, team) ? <span className="team-role-chip">{roleForTeam(currentUser, team)}</span> : null}
               </div>
 
               <div className="project-card-grid">

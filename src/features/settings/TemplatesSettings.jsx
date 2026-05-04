@@ -34,11 +34,11 @@ export function TemplatesSettings() {
     if (title) createTemplateItem(template.id, { templatePhaseId: phaseId, title, result: '', relativeStartDay: 0, relativeDueDay: 3 });
   }
 
-  return <div className="split">
+  return <div className="split templates-settings">
     <aside className="side-list">
-      <div className="card card-pad">
-        <div className="section-title">Шаблоны</div>
-        {canCreate ? <div style={{ display: 'grid', gap: 8 }}><input className="input" placeholder="Новый шаблон" value={newTemplateTitle} onChange={e => setNewTemplateTitle(e.target.value)} /><Button variant="primary" onClick={addTemplate}>+ Создать шаблон</Button></div> : null}
+      <div className="card card-pad template-create-card">
+        <div className="section-title">Новый шаблон</div>
+        {canCreate ? <div className="template-create-inline"><input className="input" placeholder="Название шаблона" value={newTemplateTitle} onChange={e => setNewTemplateTitle(e.target.value)} /><Button size="sm" variant="primary" onClick={addTemplate}>Создать</Button></div> : null}
       </div>
       {templates.map(t => <button key={t.id} className={`side-item ${template?.id === t.id ? 'active' : ''}`} onClick={() => setSelectedId(t.id)}>
         {t.title}<div className="small muted">v{t.version} · {t.category}</div>

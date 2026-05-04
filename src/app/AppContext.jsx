@@ -249,10 +249,20 @@ export function AppProvider({ children }) {
 
   function updateProject(projectId, patch) {
     const project = projectById(db, projectId);
-    if (!project || (!hasPermission(db, currentUser, 'team.project.manageAccess', { teamId: project.teamId }) && !hasPermission(db, currentUser, 'project.member.changeRole', { projectId }))) return false;
+    const canUpdateProject = Boolean(
+      project && (
+        ['superadmin', 'admin'].includes(currentUser?.platformRole) ||
+        hasPermission(db, currentUser, 'team.project.manageAccess', { teamId: project.teamId }) ||
+        hasPermission(db, currentUser, 'project.member.changeRole', { projectId }) ||
+        hasPermission(db, currentUser, 'project.task.statusAny', { projectId })
+      )
+    );
+    if (!project || !canUpdateProject) return false;
     const datesChanged = 'start' in patch || 'due' in patch;
+    const statusChanged = 'status' in patch && patch.status !== project.status;
     setDb(prev => ({ ...prev, projects: prev.projects.map(item => item.id === projectId ? { ...item, ...patch } : item) }), `Изменен проект ${projectId}`);
     if (datesChanged) emitNotification('project.dates_changed', { projectId, entityType: 'project', entityId: projectId, title: 'Сроки проекта изменились', message: `Изменены сроки проекта «${project.title}».` });
+    if (statusChanged && patch.status === 'done') emitNotification('project.completed', { projectId, entityType: 'project', entityId: projectId, title: 'Проект завершён', message: `Проект «${project.title}» отмечен как готовый.` });
     return true;
   }
 
@@ -448,11 +458,24 @@ export function AppProvider({ children }) {
   }
 
   function markNotificationRead(notificationId) {
-    setDb(prev => ({ ...prev, notifications: prev.notifications.map(n => n.id === notificationId && n.userId === currentUser?.id ? { ...n, isRead: true } : n) }));
+    const readAt = new Date().toISOString();
+    setDb(prev => ({
+      ...prev,
+      notifications: prev.notifications.map(n => n.id === notificationId && n.userId === currentUser?.id ? { ...n, isRead: true, readAt } : n),
+      notificationDeliveryLog: (prev.notificationDeliveryLog || []).map(row => row.notificationId === notificationId && row.userId === currentUser?.id ? { ...row, status: 'read', readAt } : row)
+    }));
   }
 
   function markAllNotificationsRead() {
-    setDb(prev => ({ ...prev, notifications: prev.notifications.map(n => n.userId === currentUser?.id ? { ...n, isRead: true } : n) }));
+    const readAt = new Date().toISOString();
+    setDb(prev => {
+      const ownUnreadIds = new Set((prev.notifications || []).filter(n => n.userId === currentUser?.id && !n.isRead).map(n => n.id));
+      return {
+        ...prev,
+        notifications: prev.notifications.map(n => n.userId === currentUser?.id ? { ...n, isRead: true, readAt: n.readAt || readAt } : n),
+        notificationDeliveryLog: (prev.notificationDeliveryLog || []).map(row => ownUnreadIds.has(row.notificationId) && row.userId === currentUser?.id ? { ...row, status: 'read', readAt } : row)
+      };
+    });
   }
 
   function updateDictionaryItem(itemId, patch) {
